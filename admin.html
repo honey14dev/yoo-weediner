@@ -788,15 +788,29 @@
 				}
 			}
 
-			const ordersResponse = await supabaseClient
+			let ordersResponse = await supabaseClient
 				.from(SUPABASE_ORDERS_TABLE)
-				.select("id, order_data")
+				.select("id, order_data, created_at")
 				.order("created_at", { ascending: true });
+
+			if (ordersResponse.error) {
+				ordersResponse = await supabaseClient.from(SUPABASE_ORDERS_TABLE).select("*");
+			}
 
 			if (!ordersResponse.error) {
 				state.orders = Array.isArray(ordersResponse.data)
 					? ordersResponse.data
-						.map((row) => row.order_data)
+						.map((row) => {
+							if (row && typeof row.order_data === "object") {
+								return row.order_data;
+							}
+
+							if (row && typeof row === "object" && (row.customerName || row.items)) {
+								return row;
+							}
+
+							return null;
+						})
 						.filter((order) => order && typeof order === "object")
 					: [];
 				writeOrdersLocal(state.orders);
@@ -934,7 +948,10 @@
 			renderAvailabilityList();
 		});
 
-		refreshOrdersBtn.addEventListener("click", () => {
+		refreshOrdersBtn.addEventListener("click", async () => {
+			if (supabaseClient) {
+				await pullAdminRemoteState();
+			}
 			renderAvailabilityList();
 			renderOrdersTable();
 		});
