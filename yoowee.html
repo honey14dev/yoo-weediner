@@ -1256,12 +1256,16 @@
 		function activeOrderItems() {
 			return products
 				.filter((p) => isAvailable(p.id) && Number(state.quantities[p.id]) > 0)
-				.map((p) => ({
-					...p,
-					qty: Number(state.quantities[p.id]),
-					subtotal: Number(state.quantities[p.id]) * p.price,
-					customization: isOverloadProduct(p) ? { ...getCustomization(p.id) } : null
-				}));
+				.map((p) => {
+					const customization = isOverloadProduct(p) ? { ...getCustomization(p.id) } : null;
+					return {
+						...p,
+						qty: Number(state.quantities[p.id]),
+						subtotal: Number(state.quantities[p.id]) * p.price,
+						customization,
+						customizationSummary: customization ? describeCustomization(customization) : ""
+					};
+				});
 		}
 
 		function calculateItemsTotal() {
