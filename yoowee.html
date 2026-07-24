@@ -964,10 +964,14 @@
 		<p class="footer-note"><span class="wordmark"><span class="wordmark-yoo">Yoo-Wee</span><span class="wordmark-diner">Diner</span></span> Ordering System</p>
 	</main>
 
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 	<script>
 		const DELIVERY_FEE = 25;
 		const PRODUCT_AVAILABILITY_KEY = "yooweeProductAvailability";
-		const ADMIN_SUBMISSION_URL = "https://honey14dev.github.io/yoo-weediner/admin.html";
+		const SUPABASE_URL = "https://imdohzveogtrubfnggfy.supabase.co";
+		const SUPABASE_ANON_KEY = "sb_publishable_AVpyYmKcoGZ0ECswuhXUOQ_Fa_SnO1Q";
+		const SUPABASE_AVAILABILITY_TABLE = "yoowee_availability";
+		const SUPABASE_ORDERS_TABLE = "yoowee_orders";
 		const OVERLOAD_CATEGORY = "Mac Chicken Fries Overload";
 		const CUSTOM_OVERLOAD_ID = "overload-build-your-own";
 		const overloadChoices = {
@@ -1036,6 +1040,9 @@
 			customizations: {}
 		};
 
+		let supabaseClient = null;
+		let availabilityPollTimer = null;
+
 		const pageButtons = Array.from(document.querySelectorAll(".menu button"));
 		const pages = Array.from(document.querySelectorAll(".page"));
 		const previewGrid = document.getElementById("previewGrid");
@@ -1058,6 +1065,29 @@
 
 		function toPeso(value) {
 			return `PHP ${value.toFixed(2)}`;
+		}
+
+		function hasSupabaseConfig() {
+			return (
+				typeof SUPABASE_URL === "string" &&
+				typeof SUPABASE_ANON_KEY === "string" &&
+				SUPABASE_URL.trim() &&
+				SUPABASE_ANON_KEY.trim() &&
+				!SUPABASE_URL.includes("YOUR_") &&
+				!SUPABASE_ANON_KEY.includes("YOUR_")
+			);
+		}
+
+		function initSupabase() {
+			if (!window.supabase || !hasSupabaseConfig()) {
+				return null;
+			}
+
+			try {
+				return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+			} catch {
+				return null;
+			}
 		}
 
 		function isOverloadProduct(productOrId) {
@@ -1420,25 +1450,69 @@
 			localStorage.setItem("yooweeOrders", JSON.stringify(orders));
 		}
 
-		function encodePayload(value) {
-			const utf8 = new TextEncoder().encode(JSON.stringify(value));
-			let binary = "";
-			utf8.forEach((byte) => {
-				binary += String.fromCharCode(byte);
-			});
-			return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+		async function pullRemoteAvailability() {
+			if (!supabaseClient) {
+				return;
+			}
+
+			const { data, error } = await supabaseClient
+				.from(SUPABASE_AVAILABILITY_TABLE)
+				.select("availability")
+				.eq("id", 1)
+				.maybeSingle();
+
+			if (error) {
+				return;
+			}
+
+			const defaults = defaultAvailabilityMap();
+			const remoteAvailability = data?.availability;
+			const mergedAvailability =
+				remoteAvailability && typeof remoteAvailability === "object"
+					? { ...defaults, ...remoteAvailability }
+					: defaults;
+
+			localStorage.setItem(PRODUCT_AVAILABILITY_KEY, JSON.stringify(mergedAvailability));
+			syncAvailabilityFromStorage();
+			renderPreviewGrid();
+			renderOrderGrid();
+			renderCheckoutSummary();
+			updateCheckoutButtonState();
 		}
 
-		function submitOrderToAdmin(order) {
-			try {
-				const payload = encodePayload({ order, submittedAt: new Date().toISOString() });
-				const adminUrl = new URL(ADMIN_SUBMISSION_URL);
-				adminUrl.hash = `incomingOrder=${payload}`;
-				window.open(adminUrl.toString(), "_blank", "noopener,noreferrer");
-				return true;
-			} catch {
-				return false;
+		function startAvailabilitySync() {
+			if (!supabaseClient) {
+				return;
 			}
+
+			if (availabilityPollTimer) {
+				clearInterval(availabilityPollTimer);
+			}
+
+			pullRemoteAvailability();
+			availabilityPollTimer = window.setInterval(() => {
+				pullRemoteAvailability();
+			}, 5000);
+		}
+
+		async function saveOrder(order) {
+			if (supabaseClient) {
+				const { error } = await supabaseClient.from(SUPABASE_ORDERS_TABLE).upsert(
+					{
+						id: order.id,
+						order_data: order
+					},
+					{ onConflict: "id" }
+				);
+
+				if (error) {
+					throw error;
+				}
+			}
+
+			const allOrders = readOrders();
+			allOrders.push(order);
+			writeOrders(allOrders);
 		}
 
 		pageButtons.forEach((button) => {
@@ -1467,7 +1541,7 @@
 			radio.addEventListener("change", syncPaymentUI);
 		});
 
-		checkoutForm.addEventListener("submit", (event) => {
+		checkoutForm.addEventListener("submit", async (event) => {
 			event.preventDefault();
 			checkoutError.textContent = "";
 
@@ -1514,17 +1588,13 @@
 				totalAmount: itemsTotal + DELIVERY_FEE
 			};
 
-			const allOrders = readOrders();
-			allOrders.push(order);
-			writeOrders(allOrders);
-
-			const submittedToAdmin = submitOrderToAdmin(order);
-
-			alert(
-				submittedToAdmin
-					? `Order placed successfully. Total amount: ${toPeso(order.totalAmount)}. Order was sent to admin dashboard.`
-					: `Order placed successfully. Total amount: ${toPeso(order.totalAmount)}. Could not send to admin dashboard automatically.`
-			);
+			try {
+				await saveOrder(order);
+				alert(`Order placed successfully. Total amount: ${toPeso(order.totalAmount)}.`);
+			} catch {
+				checkoutError.textContent = "Could not submit your order right now. Please try again.";
+				return;
+			}
 
 			// Reset customer flow for the next order.
 			checkoutForm.reset();
@@ -1549,7 +1619,21 @@
 			}
 		});
 
+		supabaseClient = initSupabase();
+
 		importIncomingAvailabilityFromUrl();
+		if (supabaseClient) {
+			supabaseClient
+				.from(SUPABASE_AVAILABILITY_TABLE)
+				.upsert({ id: 1, availability: defaultAvailabilityMap() }, { onConflict: "id", ignoreDuplicates: true })
+				.then(() => {
+					startAvailabilitySync();
+				})
+				.catch(() => {
+					// Keep local fallback if Supabase seed fails at runtime.
+				});
+		}
+
 		syncAvailabilityFromStorage();
 		ensureCustomizationState();
 		renderPreviewGrid();
@@ -1558,6 +1642,9 @@
 		syncPaymentUI();
 
 		window.addEventListener("focus", () => {
+			if (supabaseClient) {
+				pullRemoteAvailability();
+			}
 			syncAvailabilityFromStorage();
 			renderPreviewGrid();
 			renderOrderGrid();
