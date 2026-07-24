@@ -1506,7 +1506,13 @@
 				);
 
 				if (error) {
-					throw error;
+					const fallback = await supabaseClient
+						.from(SUPABASE_ORDERS_TABLE)
+						.upsert({ ...order, id: order.id }, { onConflict: "id" });
+
+					if (fallback.error) {
+						throw fallback.error;
+					}
 				}
 			}
 
