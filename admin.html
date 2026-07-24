@@ -805,6 +805,17 @@
 								return row.order_data;
 							}
 
+							if (row && typeof row.order_data === "string") {
+								try {
+									const parsed = JSON.parse(row.order_data);
+									if (parsed && typeof parsed === "object") {
+										return parsed;
+									}
+								} catch {
+									// Ignore malformed JSON payloads.
+								}
+							}
+
 							if (row && typeof row === "object" && (row.customerName || row.items)) {
 								return row;
 							}
