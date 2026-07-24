@@ -634,24 +634,29 @@
 		}
 
 		.radio-row {
-			display: flex;
-			gap: 1rem;
-			flex-wrap: wrap;
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 0.55rem 0.9rem;
 			margin-top: 0.25rem;
 		}
 
 		.radio-row label {
 			display: inline-flex;
-			align-items: flex-start;
+			align-items: center;
 			gap: 0.45rem;
 			font-weight: 700;
 			cursor: pointer;
-			line-height: 1.25;
+			line-height: 1.2;
+			min-width: 0;
 		}
 
 		.radio-row input[type="radio"] {
-			margin: 0.12rem 0 0;
+			margin: 0;
 			flex: 0 0 auto;
+		}
+
+		.radio-row .radio-label-text {
+			display: inline-block;
 		}
 
 		.payment-box {
@@ -834,6 +839,10 @@
 				flex-direction: column;
 				gap: 0.75rem;
 			}
+
+			.radio-row {
+				grid-template-columns: 1fr;
+			}
 		}
 	</style>
 </head>
@@ -934,11 +943,11 @@
 							<div class="radio-row">
 								<label>
 									<input type="radio" name="paymentMethod" value="COD" checked />
-									Cash on Delivery
+									<span class="radio-label-text">Cash on Delivery</span>
 								</label>
 								<label>
 									<input type="radio" name="paymentMethod" value="GCash" />
-									GCash
+									<span class="radio-label-text">GCash</span>
 								</label>
 							</div>
 						</div>
