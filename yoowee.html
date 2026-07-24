@@ -642,14 +642,15 @@
 		}
 
 		.radio-row label {
-			display: flex;
+			display: grid;
+			grid-template-columns: 20px auto;
 			align-items: center;
 			gap: 0.45rem;
 			font-weight: 700;
 			cursor: pointer;
 			line-height: 1.2;
 			flex: 0 0 auto;
-			width: fit-content;
+			width: auto;
 			max-width: 100%;
 		}
 
@@ -660,6 +661,7 @@
 
 		.radio-row .radio-label-text {
 			display: inline-block;
+			text-align: left;
 		}
 
 		.payment-box {
