@@ -870,7 +870,8 @@
 		}
 
 		function formatOrderItem(item) {
-			const baseLabel = `${item.name} x ${item.qty}`;
+			const itemLabel = item.adminDisplayName || item.name;
+			const baseLabel = `${itemLabel} x ${item.qty}`;
 			if (item.customizationSummary) {
 				return `${baseLabel}<br><span style="font-size:0.82rem;color:#6c463d;">${item.customizationSummary}</span>`;
 			}
@@ -903,9 +904,11 @@
 				.slice()
 				.reverse()
 				.map((order) => {
-					const itemsList = Array.isArray(order.items)
-						? order.items.map((item) => formatOrderItem(item)).join("<br><br>")
-						: "-";
+					const itemsList = order.adminOrderSummary
+						? order.adminOrderSummary.replace(/\n/g, "<br>")
+						: Array.isArray(order.items)
+							? order.items.map((item) => formatOrderItem(item)).join("<br><br>")
+							: "-";
 					const paymentDetail =
 						order.paymentMethod === "GCash"
 							? `<span class="chip">GCash</span><br>Ref: ${order.gcashRef || "-"}`
