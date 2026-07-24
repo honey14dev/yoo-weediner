@@ -869,6 +869,21 @@
 				.join("");
 		}
 
+		function formatOrderItem(item) {
+			const baseLabel = `${item.name} x ${item.qty}`;
+			if (item.customizationSummary) {
+				return `${baseLabel}<br><span style="font-size:0.82rem;color:#6c463d;">${item.customizationSummary}</span>`;
+			}
+
+			if (!item.customization || typeof item.customization !== "object") {
+				return baseLabel;
+			}
+
+			const customization = item.customization;
+			const toppings = Array.isArray(customization.toppings) && customization.toppings.length ? customization.toppings.join(", ") : "None";
+			return `${baseLabel}<br><span style="font-size:0.82rem;color:#6c463d;">Carbs: ${customization.carbs || "-"}; Protein: ${customization.protein || "-"}; Toppings: ${toppings}; Sauces: ${customization.sauce1 || "-"}, ${customization.sauce2 || "-"}</span>`;
+		}
+
 		function renderOrdersTable() {
 			const orders = supabaseClient ? state.orders : readOrdersLocal();
 			if (!orders.length) {
@@ -889,7 +904,7 @@
 				.reverse()
 				.map((order) => {
 					const itemsList = Array.isArray(order.items)
-						? order.items.map((item) => `${item.name} x ${item.qty}`).join(", ")
+						? order.items.map((item) => formatOrderItem(item)).join("<br><br>")
 						: "-";
 					const paymentDetail =
 						order.paymentMethod === "GCash"
