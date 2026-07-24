@@ -553,6 +553,7 @@
 	<script>
 		const ADMIN_PASSCODE = "admin123";
 		const PRODUCT_AVAILABILITY_KEY = "yooweeProductAvailability";
+		const CUSTOMER_SYNC_TARGETS = ["yoowee.html", "https://honey14dev.github.io/yoo-weediner/yoowee.html"];
 		const products = [
 			{ id: "starter-macnchiz", category: "Starters", name: "Mac N Chiz" },
 			{ id: "starter-cajunfries", category: "Starters", name: "Cajun Fries" },
@@ -574,6 +575,7 @@
 			{ id: "overload-bacon", category: "Mac Chicken Fries Overload", name: "Bacon Overload" },
 			{ id: "overload-corn", category: "Mac Chicken Fries Overload", name: "Cheesy Corn Overload" },
 			{ id: "overload-cheeseburger", category: "Mac Chicken Fries Overload", name: "Cheeseburger Overload" },
+			{ id: "overload-build-your-own", category: "Mac Chicken Fries Overload", name: "Make Your Own Overload" },
 			{ id: "coffee-americano", category: "Caffeine", name: "Americano" },
 			{ id: "coffee-latte", category: "Caffeine", name: "Espresso Latte" },
 			{ id: "coffee-spanish", category: "Caffeine", name: "Spanish Latte" },
@@ -625,6 +627,50 @@
 			localStorage.setItem("yooweeOrders", JSON.stringify(orders));
 		}
 
+		function decodePayload(payload) {
+			const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+			const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+			const binary = atob(padded);
+			const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+			const text = new TextDecoder().decode(bytes);
+			return JSON.parse(text);
+		}
+
+		function importIncomingOrderFromUrl() {
+			const hashPayload = window.location.hash.startsWith("#incomingOrder=")
+				? window.location.hash.slice("#incomingOrder=".length)
+				: "";
+			const queryPayload = new URLSearchParams(window.location.search).get("incomingOrder") || "";
+			const payload = hashPayload || queryPayload;
+
+			if (!payload) {
+				return;
+			}
+
+			try {
+				const parsed = decodePayload(payload);
+				if (!parsed || typeof parsed !== "object" || !parsed.order || typeof parsed.order !== "object") {
+					return;
+				}
+
+				const order = parsed.order;
+				if (!order.id || !Array.isArray(order.items)) {
+					return;
+				}
+
+				const existingOrders = readOrders();
+				const existsAlready = existingOrders.some((existing) => existing.id === order.id);
+				if (!existsAlready) {
+					existingOrders.push(order);
+					writeOrders(existingOrders);
+				}
+			} catch {
+				// Ignore malformed incoming payloads.
+			} finally {
+				history.replaceState(null, "", window.location.pathname + window.location.search);
+			}
+		}
+
 		function defaultAvailabilityMap() {
 			return Object.fromEntries(products.map((p) => [p.id, true]));
 		}
@@ -648,6 +694,35 @@
 
 		function writeAvailability(availability) {
 			localStorage.setItem(PRODUCT_AVAILABILITY_KEY, JSON.stringify(availability));
+			syncAvailabilityToCustomerPages(availability);
+		}
+
+		function encodePayload(value) {
+			const utf8 = new TextEncoder().encode(JSON.stringify(value));
+			let binary = "";
+			utf8.forEach((byte) => {
+				binary += String.fromCharCode(byte);
+			});
+			return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+		}
+
+		function syncAvailabilityToCustomerPages(availability) {
+			const payload = encodePayload({ availability, syncedAt: new Date().toISOString() });
+			CUSTOMER_SYNC_TARGETS.forEach((target) => {
+				try {
+					const customerUrl = new URL(target, window.location.href);
+					customerUrl.hash = `incomingAvailability=${payload}`;
+					const bridgeFrame = document.createElement("iframe");
+					bridgeFrame.style.display = "none";
+					bridgeFrame.src = customerUrl.toString();
+					document.body.appendChild(bridgeFrame);
+					setTimeout(() => {
+						bridgeFrame.remove();
+					}, 5000);
+				} catch {
+					// Ignore target URL sync failures.
+				}
+			});
 		}
 
 		function renderAvailabilityList() {
@@ -763,6 +838,8 @@
 				renderOrdersTable();
 			}
 		});
+
+		importIncomingOrderFromUrl();
 	</script>
 </body>
 </html>
