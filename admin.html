@@ -550,10 +550,14 @@
 		</section>
 	</main>
 
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 	<script>
 		const ADMIN_PASSCODE = "admin123";
 		const PRODUCT_AVAILABILITY_KEY = "yooweeProductAvailability";
-		const CUSTOMER_SYNC_TARGETS = ["yoowee.html", "https://honey14dev.github.io/yoo-weediner/yoowee.html"];
+		const SUPABASE_URL = "https://imdohzveogtrubfnggfy.supabase.co";
+		const SUPABASE_ANON_KEY = "sb_publishable_AVpyYmKcoGZ0ECswuhXUOQ_Fa_SnO1Q";
+		const SUPABASE_AVAILABILITY_TABLE = "yoowee_availability";
+		const SUPABASE_ORDERS_TABLE = "yoowee_orders";
 		const products = [
 			{ id: "starter-macnchiz", category: "Starters", name: "Mac N Chiz" },
 			{ id: "starter-cajunfries", category: "Starters", name: "Cajun Fries" },
@@ -592,7 +596,9 @@
 			{ id: "refresh-water", category: "Refreshers", name: "Bottled Water" },
 			{ id: "refresh-pale", category: "Refreshers", name: "Pale Pilsen in Can" }
 		];
-		const state = { availability: {} };
+		const state = { availability: {}, orders: [] };
+		let supabaseClient = null;
+		let adminSyncTimer = null;
 
 		const adminLock = document.getElementById("adminLock");
 		const adminPanel = document.getElementById("adminPanel");
@@ -610,7 +616,30 @@
 			return `PHP ${Number(value).toFixed(2)}`;
 		}
 
-		function readOrders() {
+		function hasSupabaseConfig() {
+			return (
+				typeof SUPABASE_URL === "string" &&
+				typeof SUPABASE_ANON_KEY === "string" &&
+				SUPABASE_URL.trim() &&
+				SUPABASE_ANON_KEY.trim() &&
+				!SUPABASE_URL.includes("YOUR_") &&
+				!SUPABASE_ANON_KEY.includes("YOUR_")
+			);
+		}
+
+		function initSupabase() {
+			if (!window.supabase || !hasSupabaseConfig()) {
+				return null;
+			}
+
+			try {
+				return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+			} catch {
+				return null;
+			}
+		}
+
+		function readOrdersLocal() {
 			try {
 				const raw = localStorage.getItem("yooweeOrders");
 				if (!raw) {
@@ -623,7 +652,7 @@
 			}
 		}
 
-		function writeOrders(orders) {
+		function writeOrdersLocal(orders) {
 			localStorage.setItem("yooweeOrders", JSON.stringify(orders));
 		}
 
@@ -658,11 +687,31 @@
 					return;
 				}
 
-				const existingOrders = readOrders();
-				const existsAlready = existingOrders.some((existing) => existing.id === order.id);
-				if (!existsAlready) {
-					existingOrders.push(order);
-					writeOrders(existingOrders);
+				if (supabaseClient) {
+					supabaseClient
+						.from(SUPABASE_ORDERS_TABLE)
+						.upsert(
+							{
+								id: order.id,
+								order_data: order
+							},
+							{ onConflict: "id" }
+						)
+						.catch(() => {
+						const existingOrders = readOrdersLocal();
+						const existsAlready = existingOrders.some((existing) => existing.id === order.id);
+						if (!existsAlready) {
+							existingOrders.push(order);
+							writeOrdersLocal(existingOrders);
+						}
+						});
+				} else {
+					const existingOrders = readOrdersLocal();
+					const existsAlready = existingOrders.some((existing) => existing.id === order.id);
+					if (!existsAlready) {
+						existingOrders.push(order);
+						writeOrdersLocal(existingOrders);
+					}
 				}
 			} catch {
 				// Ignore malformed incoming payloads.
@@ -677,6 +726,9 @@
 
 		function readAvailability() {
 			const defaults = defaultAvailabilityMap();
+			if (state.availability && Object.keys(state.availability).length) {
+				return { ...defaults, ...state.availability };
+			}
 			try {
 				const raw = localStorage.getItem(PRODUCT_AVAILABILITY_KEY);
 				if (!raw) {
@@ -692,37 +744,83 @@
 			}
 		}
 
-		function writeAvailability(availability) {
+		function writeAvailabilityLocal(availability) {
 			localStorage.setItem(PRODUCT_AVAILABILITY_KEY, JSON.stringify(availability));
-			syncAvailabilityToCustomerPages(availability);
 		}
 
-		function encodePayload(value) {
-			const utf8 = new TextEncoder().encode(JSON.stringify(value));
-			let binary = "";
-			utf8.forEach((byte) => {
-				binary += String.fromCharCode(byte);
-			});
-			return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+		function saveAvailabilityState(availability) {
+			const nextAvailability = { ...defaultAvailabilityMap(), ...availability };
+			state.availability = nextAvailability;
+			writeAvailabilityLocal(nextAvailability);
 		}
 
-		function syncAvailabilityToCustomerPages(availability) {
-			const payload = encodePayload({ availability, syncedAt: new Date().toISOString() });
-			CUSTOMER_SYNC_TARGETS.forEach((target) => {
-				try {
-					const customerUrl = new URL(target, window.location.href);
-					customerUrl.hash = `incomingAvailability=${payload}`;
-					const bridgeFrame = document.createElement("iframe");
-					bridgeFrame.style.display = "none";
-					bridgeFrame.src = customerUrl.toString();
-					document.body.appendChild(bridgeFrame);
-					setTimeout(() => {
-						bridgeFrame.remove();
-					}, 5000);
-				} catch {
-					// Ignore target URL sync failures.
+		function persistAvailability(availability) {
+			saveAvailabilityState(availability);
+			if (supabaseClient) {
+				return supabaseClient.from(SUPABASE_AVAILABILITY_TABLE).upsert(
+					{
+						id: 1,
+						availability: state.availability
+					},
+					{ onConflict: "id" }
+				);
+			}
+			return Promise.resolve();
+		}
+
+		async function pullAdminRemoteState() {
+			if (!supabaseClient) {
+				return;
+			}
+
+			const availabilityResponse = await supabaseClient
+				.from(SUPABASE_AVAILABILITY_TABLE)
+				.select("availability")
+				.eq("id", 1)
+				.maybeSingle();
+
+			if (!availabilityResponse.error) {
+				const remoteAvailability = availabilityResponse.data?.availability;
+				if (remoteAvailability && typeof remoteAvailability === "object") {
+					saveAvailabilityState(remoteAvailability);
+				} else {
+					saveAvailabilityState(defaultAvailabilityMap());
 				}
-			});
+			}
+
+			const ordersResponse = await supabaseClient
+				.from(SUPABASE_ORDERS_TABLE)
+				.select("id, order_data")
+				.order("created_at", { ascending: true });
+
+			if (!ordersResponse.error) {
+				state.orders = Array.isArray(ordersResponse.data)
+					? ordersResponse.data
+						.map((row) => row.order_data)
+						.filter((order) => order && typeof order === "object")
+					: [];
+				writeOrdersLocal(state.orders);
+			}
+
+			if (adminPanel.style.display === "block") {
+				renderAvailabilityList();
+				renderOrdersTable();
+			}
+		}
+
+		function startRealtimeSync() {
+			if (!supabaseClient) {
+				return;
+			}
+
+			if (adminSyncTimer) {
+				clearInterval(adminSyncTimer);
+			}
+
+			pullAdminRemoteState();
+			adminSyncTimer = window.setInterval(() => {
+				pullAdminRemoteState();
+			}, 5000);
 		}
 
 		function renderAvailabilityList() {
@@ -747,7 +845,7 @@
 		}
 
 		function renderOrdersTable() {
-			const orders = readOrders();
+			const orders = supabaseClient ? state.orders : readOrdersLocal();
 			if (!orders.length) {
 				ordersTableBody.innerHTML = `
 					<tr>
@@ -802,7 +900,7 @@
 			}
 		});
 
-		availabilityList.addEventListener("click", (event) => {
+		availabilityList.addEventListener("click", async (event) => {
 			const button = event.target.closest("button[data-action='toggle-availability']");
 			if (!button) {
 				return;
@@ -811,19 +909,28 @@
 			const productId = button.dataset.id;
 			const nextAvailability = readAvailability();
 			nextAvailability[productId] = nextAvailability[productId] === false;
-			writeAvailability(nextAvailability);
+			await persistAvailability(nextAvailability);
+			if (supabaseClient) {
+				await pullAdminRemoteState();
+			}
 			renderAvailabilityList();
 		});
 
-		markAllAvailableBtn.addEventListener("click", () => {
+		markAllAvailableBtn.addEventListener("click", async () => {
 			const nextAvailability = Object.fromEntries(products.map((p) => [p.id, true]));
-			writeAvailability(nextAvailability);
+			await persistAvailability(nextAvailability);
+			if (supabaseClient) {
+				await pullAdminRemoteState();
+			}
 			renderAvailabilityList();
 		});
 
-		markAllUnavailableBtn.addEventListener("click", () => {
+		markAllUnavailableBtn.addEventListener("click", async () => {
 			const nextAvailability = Object.fromEntries(products.map((p) => [p.id, false]));
-			writeAvailability(nextAvailability);
+			await persistAvailability(nextAvailability);
+			if (supabaseClient) {
+				await pullAdminRemoteState();
+			}
 			renderAvailabilityList();
 		});
 
@@ -834,10 +941,40 @@
 
 		clearOrdersBtn.addEventListener("click", () => {
 			if (confirm("Clear all customer orders?")) {
-				writeOrders([]);
-				renderOrdersTable();
+				if (supabaseClient) {
+					supabaseClient
+						.from(SUPABASE_ORDERS_TABLE)
+						.delete()
+						.not("id", "is", null)
+						.then(async () => {
+							state.orders = [];
+							writeOrdersLocal([]);
+							await pullAdminRemoteState();
+							renderOrdersTable();
+						})
+						.catch(() => {
+							// Keep existing table if remote clear fails.
+						});
+				} else {
+					writeOrdersLocal([]);
+					renderOrdersTable();
+				}
 			}
 		});
+
+		supabaseClient = initSupabase();
+		if (supabaseClient) {
+			supabaseClient
+				.from(SUPABASE_AVAILABILITY_TABLE)
+				.upsert({ id: 1, availability: defaultAvailabilityMap() }, { onConflict: "id", ignoreDuplicates: true })
+				.catch(() => {
+					// Keep local fallback if Supabase seed fails.
+				});
+			startRealtimeSync();
+		} else {
+			saveAvailabilityState(readAvailability());
+			state.orders = readOrdersLocal();
+		}
 
 		importIncomingOrderFromUrl();
 	</script>
