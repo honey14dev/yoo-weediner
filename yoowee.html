@@ -642,10 +642,16 @@
 
 		.radio-row label {
 			display: inline-flex;
-			align-items: center;
+			align-items: flex-start;
 			gap: 0.45rem;
 			font-weight: 700;
 			cursor: pointer;
+			line-height: 1.25;
+		}
+
+		.radio-row input[type="radio"] {
+			margin: 0.12rem 0 0;
+			flex: 0 0 auto;
 		}
 
 		.payment-box {
