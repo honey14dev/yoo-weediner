@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Yoowee Diner Delivery</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Lilita+One&display=swap" rel="stylesheet" />
+	<style>
+		:root {
+			--cream: #fff7ec;
+			--sand: #ffe8c2;
+			--orange: #f9a825;
+			--teal: #1f2d6b;
+			--teal-dark: #151f4c;
+			--ink: #222222;
+			--red: #d63a2f;
+			--muted: #5c5c5c;
+			--danger: #b3261e;
+			--white: #ffffff;
+			--shadow: 0 10px 30px rgba(20, 20, 20, 0.14);
+			--radius: 18px;
+			--max-width: 1120px;
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		html,
+		body {
+			margin: 0;
+			padding: 0;
+			min-height: 100%;
+			background: var(--cream);
+			color: var(--ink);
+			font-family: "Baloo 2", "Trebuchet MS", sans-serif;
+			position: relative;
+		}
+
+		body::before {
+			content: "";
+			position: fixed;
+			inset: 0;
+			z-index: 50;
+			background:
+				repeating-linear-gradient(
+					90deg,
+					var(--red) 0 18px,
+					var(--white) 18px 36px
+				) top / 108px 14px repeat-x,
+				repeating-linear-gradient(
+					90deg,
+					var(--white) 0 18px,
+					var(--red) 18px 36px
+				) bottom / 108px 14px repeat-x;
+			pointer-events: none;
+			animation: top-bottom-borders-flow 5s linear infinite;
+		}
+
+		body::after {
+			content: "";
+			position: fixed;
+			left: 0;
+			right: 0;
+			top: 14px;
+			bottom: 14px;
+			z-index: 49;
+			background:
+				repeating-linear-gradient(
+					180deg,
+					var(--red) 0 18px,
+					var(--white) 18px 36px
+				) left top / 8px 108px repeat-y,
+				repeating-linear-gradient(
+					180deg,
+					var(--white) 0 18px,
+					var(--red) 18px 36px
+				) right top / 8px 108px repeat-y;
+			border-top: 1px solid rgba(214, 58, 47, 0.14);
+			border-bottom: 1px solid rgba(214, 58, 47, 0.14);
+			pointer-events: none;
+			animation: side-borders-up 5s linear infinite;
+		}
+
+		@keyframes side-borders-up {
+			from {
+				background-position: left 0 top 0, right 0 top 0;
+			}
+			to {
+				background-position: left 0 top -108px, right 0 top -108px;
+			}
+		}
+
+		@keyframes top-bottom-borders-flow {
+			from {
+				background-position: 0 top, 0 bottom;
+			}
+			to {
+				background-position: -108px top, -108px bottom;
+			}
+		}
+
+		.topbar {
+			position: sticky;
+			top: 14px;
+			z-index: 10;
+			background: rgba(255, 248, 235, 0.9);
+			backdrop-filter: blur(10px);
+			border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+		}
+
+		.topbar-inner {
+			width: min(100%, var(--max-width));
+			margin: 0 auto;
+			padding: 0.7rem 1rem;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 0.8rem;
+			flex-wrap: wrap;
+		}
+
+		.brand {
+			font-family: "Lilita One", Impact, sans-serif;
+			letter-spacing: 0.05em;
+			font-size: 1.15rem;
+			text-transform: uppercase;
+		}
+
+		.wordmark {
+			display: inline-flex;
+			align-items: baseline;
+			gap: 0.22em;
+			font-family: "Lilita One", Impact, sans-serif;
+			letter-spacing: 0.02em;
+			line-height: 1;
+			text-transform: none;
+		}
+
+		.wordmark-yoo {
+			color: var(--red);
+			-webkit-text-stroke: 1px rgba(34, 34, 34, 0.22);
+			text-shadow: 1px 1px 0 rgba(34, 34, 34, 0.1);
+			animation: wordmark-shine 2.8s ease-in-out infinite;
+		}
+
+		.wordmark-diner {
+			color: #f6b233;
+			-webkit-text-stroke: 1px rgba(34, 34, 34, 0.22);
+			text-shadow: 1px 1px 0 rgba(34, 34, 34, 0.1);
+			animation: wordmark-shine 2.8s ease-in-out infinite;
+			animation-delay: 0.25s;
+		}
+
+		@keyframes wordmark-shine {
+			0%,
+			100% {
+				filter: brightness(1);
+				text-shadow: 1px 1px 0 rgba(34, 34, 34, 0.1), 0 0 0 rgba(255, 255, 255, 0);
+			}
+			45% {
+				filter: brightness(1.34);
+				text-shadow: 1px 1px 0 rgba(34, 34, 34, 0.1), 0 0 16px rgba(255, 255, 255, 0.95), 0 0 26px rgba(246, 178, 51, 0.72);
+			}
+			58% {
+				filter: brightness(1.22);
+				text-shadow: 1px 1px 0 rgba(34, 34, 34, 0.1), 0 0 10px rgba(255, 255, 255, 0.72), 0 0 18px rgba(246, 178, 51, 0.48);
+			}
+		}
+
+		.brand-wrap {
+			display: flex;
+			align-items: center;
+			gap: 0.75rem;
+		}
+
+		.logo-mark {
+			width: 64px;
+			height: 64px;
+			flex: 0 0 auto;
+			display: block;
+			object-fit: cover;
+			border-radius: 50%;
+			background: #ffffff;
+			filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.12));
+			transform-origin: center bottom;
+			animation: logo-bounce 2.6s ease-in-out infinite;
+		}
+
+		.hero-logo {
+			animation-delay: 0.15s;
+		}
+
+		@keyframes logo-bounce {
+			0%,
+			100% {
+				transform: translateY(0) scale(1);
+			}
+			30% {
+				transform: translateY(-6px) scale(1.02);
+			}
+			55% {
+				transform: translateY(0) scale(0.995);
+			}
+		}
+
+		.logo-stack {
+			display: flex;
+			flex-direction: column;
+			gap: 0.08rem;
+		}
+
+		.logo-kicker {
+			font-size: 0.72rem;
+			font-weight: 800;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			color: var(--teal);
+		}
+
+		.menu {
+			display: flex;
+			gap: 0.5rem;
+			flex-wrap: wrap;
+		}
+
+		.menu button {
+			border: 0;
+			border-radius: 999px;
+			padding: 0.55rem 0.9rem;
+			background: #ffffff;
+			color: var(--teal-dark);
+			font-weight: 700;
+			cursor: pointer;
+			transition: transform 0.2s ease, background-color 0.2s ease;
+			box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+		}
+
+		.menu button.active {
+			background: var(--red);
+			color: var(--white);
+			transform: translateY(-1px);
+		}
+
+		.page {
+			display: none;
+			margin-top: 1rem;
+			animation: fade-slide 0.35s ease;
+		}
+
+		.page.active {
+			display: block;
+		}
+
+		@keyframes fade-slide {
+			from {
+				opacity: 0;
+				transform: translateY(8px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		.hero {
+			border-radius: calc(var(--radius) + 4px);
+			background: linear-gradient(120deg, #fff3de, #fff3de);
+			border: 4px solid var(--red);
+			padding: 1.2rem;
+			box-shadow: var(--shadow);
+			margin-bottom: 1rem;
+			overflow: hidden;
+			position: relative;
+		}
+
+		.hero-head {
+			display: flex;
+			align-items: center;
+			gap: 1rem;
+			position: relative;
+			z-index: 1;
+		}
+
+		.hero-logo {
+			width: clamp(82px, 12vw, 118px);
+			height: clamp(82px, 12vw, 118px);
+			flex: 0 0 auto;
+		}
+
+		.hero-copy {
+			min-width: 0;
+		}
+
+		.hero::after {
+			content: "";
+			width: 230px;
+			height: 230px;
+			border-radius: 50%;
+			background: rgba(214, 58, 47, 0.12);
+			position: absolute;
+			right: -70px;
+			top: -70px;
+		}
+
+		.welcome-title {
+			margin: 0;
+			font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+			font-family: "Lilita One", Impact, sans-serif;
+			line-height: 1.1;
+			color: var(--red);
+			text-transform: uppercase;
+		}
+
+		.welcome-title .wordmark {
+			font-size: 0.98em;
+			vertical-align: baseline;
+		}
+
+		.subtitle {
+			margin: 0.5rem 0 0;
+			color: #3f3a2a;
+			font-size: clamp(0.95rem, 2vw, 1.1rem);
+			max-width: 52ch;
+		}
+
+		.store-info {
+			margin-top: 0.8rem;
+			padding: 0;
+			font-weight: 700;
+			line-height: 1.45;
+			color: #2f2a22;
+		}
+
+		.store-info p {
+			margin: 0;
+		}
+
+		.store-info p + p {
+			margin-top: 0.3rem;
+		}
+
+		.topbar .store-info {
+			margin-top: 0;
+			margin-left: auto;
+			max-width: 460px;
+			font-size: 0.93rem;
+			text-align: left;
+			line-height: 1.35;
+		}
+
+		.category-block {
+			margin-bottom: 1rem;
+		}
+
+		.category-title {
+			margin: 0 0 0.55rem;
+			font-family: "Lilita One", Impact, sans-serif;
+			letter-spacing: 0.02em;
+			color: var(--red);
+			text-transform: uppercase;
+			font-size: clamp(1rem, 2vw, 1.2rem);
+		}
+
+		.card-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+			gap: 0.85rem;
+		}
+
+		.product-card {
+			border-radius: var(--radius);
+			background: var(--white);
+			padding: 0.9rem;
+			box-shadow: var(--shadow);
+			border: 2px solid rgba(214, 58, 47, 0.22);
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+		}
+
+		.product-card.unavailable {
+			opacity: 0.64;
+			background: #f4f4f4;
+		}
+
+		.status-pill {
+			display: inline-flex;
+			align-self: flex-start;
+			padding: 0.2rem 0.55rem;
+			border-radius: 999px;
+			font-size: 0.75rem;
+			font-weight: 800;
+			letter-spacing: 0.01em;
+			background: #fce0dc;
+			color: #8f2118;
+		}
+
+		.unavailable-note {
+			margin: 0;
+			font-weight: 700;
+			font-size: 0.86rem;
+			color: #8f2118;
+		}
+
+		.customizer {
+			margin-top: 0.45rem;
+			padding-top: 0.55rem;
+			border-top: 1px dashed rgba(214, 58, 47, 0.28);
+		}
+
+		.customizer-title {
+			margin: 0 0 0.35rem;
+			font-size: 0.86rem;
+			font-weight: 800;
+			color: var(--teal-dark);
+			text-transform: uppercase;
+			letter-spacing: 0.03em;
+		}
+
+		.customizer-group {
+			margin-top: 0.5rem;
+		}
+
+		.customizer-group label,
+		.customizer-label {
+			display: block;
+			margin-bottom: 0.22rem;
+			font-size: 0.82rem;
+			font-weight: 800;
+			color: #5b332d;
+		}
+
+		.choice-row {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.35rem;
+		}
+
+		.choice-btn {
+			border: 1px solid rgba(31, 45, 107, 0.22);
+			background: #fff8f0;
+			color: var(--teal-dark);
+			border-radius: 999px;
+			padding: 0.32rem 0.6rem;
+			font: inherit;
+			font-size: 0.78rem;
+			font-weight: 800;
+			cursor: pointer;
+		}
+
+		.choice-btn.active {
+			background: var(--red);
+			color: #fff;
+			border-color: var(--red);
+		}
+
+		.customizer select {
+			width: 100%;
+			border: 1px solid rgba(0, 0, 0, 0.18);
+			border-radius: 10px;
+			padding: 0.45rem 0.55rem;
+			font: inherit;
+			background: #fffdf7;
+		}
+
+		.custom-summary {
+			margin: 0.35rem 0 0;
+			font-size: 0.8rem;
+			color: #6c463d;
+		}
+
+		.product-name {
+			margin: 0;
+			font-weight: 800;
+			font-size: 1.02rem;
+		}
+
+		.price {
+			margin: 0;
+			color: var(--teal);
+			font-weight: 700;
+		}
+
+		.desc {
+			margin: 0;
+			color: var(--muted);
+			font-size: 0.9rem;
+		}
+
+		.qty-wrap {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			margin-top: 0.3rem;
+		}
+
+		.qty-controls {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.4rem;
+		}
+
+		.qty-btn {
+			width: 30px;
+			height: 30px;
+			border: 0;
+			border-radius: 8px;
+			background: var(--red);
+			color: #fff;
+			font-size: 1rem;
+			font-weight: 800;
+			line-height: 1;
+			cursor: pointer;
+		}
+
+		.qty-btn:hover {
+			opacity: 0.92;
+		}
+
+		.qty-wrap input {
+			width: 58px;
+			border: 1px solid rgba(0, 0, 0, 0.2);
+			border-radius: 10px;
+			padding: 0.45rem;
+			font-weight: 700;
+			font-size: 0.98rem;
+			text-align: center;
+			background: #fffdf7;
+		}
+
+		.btn {
+			border: 0;
+			border-radius: 12px;
+			padding: 0.72rem 1rem;
+			font-weight: 800;
+			letter-spacing: 0.01em;
+			cursor: pointer;
+			font-family: "Baloo 2", "Trebuchet MS", sans-serif;
+			transition: transform 0.2s ease, opacity 0.2s ease;
+		}
+
+		.btn:disabled {
+			opacity: 0.55;
+			cursor: not-allowed;
+		}
+
+		.btn-primary {
+			background: var(--orange);
+			color: var(--white);
+		}
+
+		.btn-secondary {
+			background: var(--teal);
+			color: var(--white);
+		}
+
+		.btn-neutral {
+			background: #f2f2f2;
+			color: #222;
+		}
+
+		.btn:hover:not(:disabled) {
+			transform: translateY(-1px);
+		}
+
+		.actions {
+			margin-top: 1rem;
+			display: flex;
+			gap: 0.6rem;
+			flex-wrap: wrap;
+		}
+
+		.section-head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 0.7rem;
+			margin-bottom: 0.6rem;
+			flex-wrap: wrap;
+		}
+
+		.section-head h2 {
+			margin: 0;
+		}
+
+		.panel {
+			border-radius: var(--radius);
+			background: var(--white);
+			box-shadow: var(--shadow);
+			padding: 1rem;
+			border: 2px solid rgba(214, 58, 47, 0.22);
+			margin-bottom: 0.9rem;
+		}
+
+		.panel h2,
+		.panel h3 {
+			margin-top: 0;
+		}
+
+		.split {
+			display: grid;
+			grid-template-columns: 1.3fr 1fr;
+			gap: 0.9rem;
+		}
+
+		.field {
+			display: flex;
+			flex-direction: column;
+			gap: 0.35rem;
+			margin-bottom: 0.8rem;
+		}
+
+		.field label {
+			font-weight: 700;
+		}
+
+		.field input,
+		.field textarea,
+		.field select {
+			width: 100%;
+			border: 1px solid rgba(0, 0, 0, 0.23);
+			border-radius: 10px;
+			padding: 0.6rem 0.7rem;
+			font: inherit;
+			background: #fffcf5;
+		}
+
+		.field textarea {
+			resize: vertical;
+			min-height: 80px;
+		}
+
+		.radio-row {
+			display: flex;
+			gap: 1rem;
+			flex-wrap: wrap;
+			margin-top: 0.25rem;
+		}
+
+		.radio-row label {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.45rem;
+			font-weight: 700;
+			cursor: pointer;
+		}
+
+		.payment-box {
+			border: 1px dashed rgba(0, 0, 0, 0.25);
+			border-radius: 12px;
+			background: #f7fffd;
+			padding: 0.8rem;
+			margin-top: 0.75rem;
+			display: none;
+		}
+
+		.payment-box.active {
+			display: block;
+		}
+
+		.qr {
+			width: min(220px, 100%);
+			border-radius: 10px;
+			border: 1px solid rgba(0, 0, 0, 0.14);
+			display: block;
+			margin-bottom: 0.5rem;
+			background: #fff;
+		}
+
+		.totals {
+			background: #fff6e6;
+			border-radius: 12px;
+			padding: 0.75rem;
+			border: 1px solid rgba(0, 0, 0, 0.1);
+		}
+
+		.totals p {
+			margin: 0.32rem 0;
+			display: flex;
+			justify-content: space-between;
+			gap: 0.75rem;
+			font-weight: 700;
+		}
+
+		.totals p:last-child {
+			color: var(--teal-dark);
+			font-size: 1.05rem;
+		}
+
+		.small-note {
+			margin: 0.55rem 0 0;
+			font-size: 0.86rem;
+			color: var(--muted);
+		}
+
+		.error {
+			color: var(--danger);
+			font-weight: 700;
+			margin-top: 0.55rem;
+			min-height: 1.2rem;
+		}
+
+		.order-list {
+			margin: 0;
+			padding-left: 1.1rem;
+		}
+
+		.order-list li {
+			margin-bottom: 0.42rem;
+		}
+
+		.admin-lock {
+			text-align: center;
+			padding: 1.5rem 1rem;
+		}
+
+		.admin-lock input {
+			max-width: 280px;
+			margin: 0 auto;
+			display: block;
+		}
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 0.94rem;
+			background: #fff;
+			border-radius: 12px;
+			overflow: hidden;
+		}
+
+		th,
+		td {
+			border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+			padding: 0.6rem;
+			text-align: left;
+			vertical-align: top;
+		}
+
+		th {
+			background: #f2fbfa;
+			color: #173b38;
+			font-size: 0.84rem;
+			text-transform: uppercase;
+			letter-spacing: 0.04em;
+		}
+
+		.chip {
+			display: inline-block;
+			border-radius: 999px;
+			padding: 0.22rem 0.55rem;
+			font-size: 0.76rem;
+			font-weight: 800;
+			background: #eaf7f5;
+			color: #0d5a55;
+		}
+
+		.footer-note {
+			text-align: center;
+			color: #47514f;
+			font-size: 0.86rem;
+			margin: 1.4rem 0 0.8rem;
+		}
+
+		.footer-note .wordmark {
+			font-size: 1.05rem;
+			margin-right: 0.2rem;
+		}
+
+		@media (max-width: 860px) {
+			.topbar-inner {
+				align-items: flex-start;
+			}
+
+			.topbar .store-info {
+				max-width: 100%;
+				margin-left: 0;
+				text-align: left;
+			}
+
+			.hero-head {
+				align-items: flex-start;
+			}
+
+			.split {
+				grid-template-columns: 1fr;
+			}
+			table,
+			thead,
+			tbody,
+			tr,
+			th,
+			td {
+				display: block;
+			}
+			thead {
+				display: none;
+			}
+			tr {
+				border: 1px solid rgba(0, 0, 0, 0.1);
+				border-radius: 12px;
+				margin-bottom: 0.75rem;
+				overflow: hidden;
+			}
+			td {
+				border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+			}
+			td::before {
+				content: attr(data-label) ": ";
+				font-weight: 800;
+			}
+		}
+
+		@media (max-width: 560px) {
+			.brand-wrap {
+				gap: 0.55rem;
+			}
+
+			.logo-mark {
+				width: 52px;
+				height: 52px;
+			}
+
+			.hero-head {
+				flex-direction: column;
+				gap: 0.75rem;
+			}
+		}
+	</style>
+</head>
+<body>
+	<header class="topbar">
+		<div class="topbar-inner">
+			<div class="brand-wrap">
+				<img class="logo-mark" src="Unknown-5.jpg" alt="Yoo-wee Diner logo" />
+				<div class="logo-stack">
+					<div class="logo-kicker">Mac it. Stack it. Fry it.</div>
+					<div class="brand"><span class="wordmark"><span class="wordmark-yoo">Yoo-Wee</span><span class="wordmark-diner">Diner</span></span></div>
+				</div>
+			</div>
+			<div class="store-info" aria-label="Store information">
+				<p>Store hour 4pm - 2am (Tuesday - Sunday)</p>
+				<p>Also accepting orders/delivery.</p>
+				<p>Located at Quezon Eco-Tourism Rd Extension Tayabas City 4327 Quezon</p>
+				<a href="https://maps.app.goo.gl/YzMQ4xwgUzdWVqJL7?g_st=ic">
+					https://maps.app.goo.gl/YzMQ4xwgUzdWVqJL7?g_st=ic
+				</a>
+			</div>
+		</div>
+	</header>
+
+	<main class="app-shell">
+		<section id="page1" class="page active" aria-label="Welcome and product preview">
+			<div class="hero">
+				<div class="hero-head">
+					<img class="logo-mark hero-logo" src="Unknown-5.jpg" alt="Yoo-wee Diner logo" />
+					<div class="hero-copy">
+						<h1 class="welcome-title">Come seek what you crave at <span class="wordmark"><span class="wordmark-yoo">Yoo-Wee</span><span class="wordmark-diner">Diner</span></span></h1>
+						<p class="subtitle">Fresh meals, quick delivery, and smooth checkout. Start by previewing our products, then place your order in a few taps.</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="panel">
+				<h2>Product Preview</h2>
+				<div id="previewGrid"></div>
+				<div class="actions">
+					<button id="toOrderBtn" class="btn btn-primary" type="button">Order for delivery?</button>
+				</div>
+			</div>
+		</section>
+
+		<section id="page2" class="page" aria-label="Select orders and quantity">
+			<div class="panel">
+				<div class="section-head">
+					<h2>Choose Your Orders</h2>
+					<button id="topBackToMenuBtn" class="btn btn-neutral" type="button">Back to Menu</button>
+				</div>
+				<p class="small-note">Set your quantity for each item. Quantity can be zero if you do not want that product.</p>
+				<div id="orderGrid"></div>
+				<div class="actions">
+					<button id="backToMenuBtn" class="btn btn-neutral" type="button">Back to Menu</button>
+					<button id="toPaymentBtn" class="btn btn-primary" type="button" disabled>Check Out</button>
+				</div>
+				<p id="page2Error" class="error" aria-live="polite"></p>
+			</div>
+		</section>
+
+		<section id="page3" class="page" aria-label="Payment section">
+			<div class="panel split">
+				<div>
+					<h3>Your Orders</h3>
+					<ul id="checkoutItems" class="order-list"></ul>
+					<div class="totals">
+						<p><span>Items Total</span><span id="itemsTotal">PHP 0.00</span></p>
+						<p><span>Delivery Fee</span><span>PHP 25.00</span></p>
+						<p><span>Total to Pay</span><span id="grandTotal">PHP 25.00</span></p>
+					</div>
+					<p class="small-note">Delivery fee is fixed at 25 pesos.</p>
+				</div>
+
+				<div>
+					<div class="section-head">
+						<h2>Payment Details</h2>
+						<button id="topBackToOrderBtn" class="btn btn-neutral" type="button">Back to Order</button>
+					</div>
+					<form id="checkoutForm" novalidate>
+						<div class="field">
+							<label for="customerName">Customer Name</label>
+							<input id="customerName" name="customerName" type="text" required placeholder="Enter full name" />
+						</div>
+
+						<div class="field">
+							<label for="customerNumber">Customer Number (11 digits)</label>
+							<input id="customerNumber" name="customerNumber" type="tel" inputmode="numeric" pattern="[0-9]{11}" maxlength="11" required placeholder="09XXXXXXXXX" />
+						</div>
+
+						<div class="field">
+							<label for="customerAddress">Address</label>
+							<textarea id="customerAddress" name="customerAddress" required placeholder="House no., street, barangay, city"></textarea>
+						</div>
+
+						<div class="field">
+							<label>Payment Procedure</label>
+							<div class="radio-row">
+								<label>
+									<input type="radio" name="paymentMethod" value="COD" checked />
+									Cash on Delivery
+								</label>
+								<label>
+									<input type="radio" name="paymentMethod" value="GCash" />
+									GCash
+								</label>
+							</div>
+						</div>
+
+						<div id="gcashBox" class="payment-box" aria-live="polite">
+							<img
+								class="qr"
+								alt="GCash QR code"
+								src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 220'><rect width='220' height='220' fill='white'/><rect x='16' y='16' width='58' height='58' fill='black'/><rect x='26' y='26' width='38' height='38' fill='white'/><rect x='31' y='31' width='28' height='28' fill='black'/><rect x='146' y='16' width='58' height='58' fill='black'/><rect x='156' y='26' width='38' height='38' fill='white'/><rect x='161' y='31' width='28' height='28' fill='black'/><rect x='16' y='146' width='58' height='58' fill='black'/><rect x='26' y='156' width='38' height='38' fill='white'/><rect x='31' y='161' width='28' height='28' fill='black'/><rect x='96' y='96' width='12' height='12' fill='black'/><rect x='112' y='96' width='12' height='12' fill='black'/><rect x='128' y='96' width='12' height='12' fill='black'/><rect x='96' y='112' width='12' height='12' fill='black'/><rect x='128' y='112' width='12' height='12' fill='black'/><rect x='96' y='128' width='12' height='12' fill='black'/><rect x='112' y='128' width='12' height='12' fill='black'/><rect x='128' y='128' width='12' height='12' fill='black'/><rect x='158' y='118' width='12' height='12' fill='black'/><rect x='174' y='118' width='12' height='12' fill='black'/><rect x='158' y='134' width='12' height='12' fill='black'/><rect x='174' y='150' width='12' height='12' fill='black'/><rect x='158' y='166' width='12' height='12' fill='black'/><rect x='112' y='166' width='12' height='12' fill='black'/><rect x='96' y='182' width='12' height='12' fill='black'/><rect x='128' y='182' width='12' height='12' fill='black'/></svg>"
+							/>
+							<p><strong>GCash Account Name:</strong> <span class="wordmark"><span class="wordmark-yoo">Yoo-Wee</span><span class="wordmark-diner">Diner</span></span></p>
+							<p><strong>GCash Number:</strong> 09171234567</p>
+							<div class="field">
+								<label for="gcashRef">Reference / Receipt Number</label>
+								<input id="gcashRef" name="gcashRef" type="text" placeholder="Required before checkout" />
+							</div>
+						</div>
+
+						<div class="actions">
+							<button id="backToOrderBtn" class="btn btn-neutral" type="button">Back to Order</button>
+							<button id="placeOrderBtn" class="btn btn-primary" type="submit">Complete Checkout</button>
+						</div>
+						<p id="checkoutError" class="error" aria-live="polite"></p>
+					</form>
+				</div>
+			</div>
+		</section>
+
+		<p class="footer-note"><span class="wordmark"><span class="wordmark-yoo">Yoo-Wee</span><span class="wordmark-diner">Diner</span></span> Ordering System</p>
+	</main>
+
+	<script>
+		const DELIVERY_FEE = 25;
+		const PRODUCT_AVAILABILITY_KEY = "yooweeProductAvailability";
+		const OVERLOAD_CATEGORY = "Mac Chicken Fries Overload";
+		const CUSTOM_OVERLOAD_ID = "overload-build-your-own";
+		const overloadChoices = {
+			carbs: ["Mac N Chiz", "Both", "Cajun Fries"],
+			proteins: ["Chicken Tenders", "Bacon Strips", "Ground Beef"],
+			toppings: ["Cheese", "Coleslaw", "Corn", "Chopped Jalapeno", "Bacon Bits"],
+			sauces: ["Yoo-wee Signature Sauce", "Spicy Yoo-wee Sauce", "Garlic Mayo", "Cheesy Jalapeno", "Sticks N Onion Mayo", "Gravy"]
+		};
+
+		const products = [
+			{ id: "starter-macnchiz", category: "Starters", name: "Mac N Chiz", price: 90, desc: "Classic cheesy starter." },
+			{ id: "starter-cajunfries", category: "Starters", name: "Cajun Fries", price: 120, desc: "Fries with cajun seasoning." },
+			{ id: "starter-friesoverload", category: "Starters", name: "Fries Overload", price: 199, desc: "Loaded fries platter." },
+			{ id: "starter-potatochips", category: "Starters", name: "Potato Chips", price: 80, desc: "Served crunchy and salty." },
+			{ id: "starter-buttercorn", category: "Starters", name: "Cheesy Butter Corn", price: 75, desc: "Sweet corn with cheese butter." },
+			{ id: "starter-jalapeno", category: "Starters", name: "Cheesy Jalapeno", price: 120, desc: "Creamy with jalapeno kick." },
+
+			{ id: "buns-omg", category: "Buns n' Meat", name: "OMG Burger", price: 130, desc: "Served with potato chips." },
+			{ id: "buns-cheesyomg", category: "Buns n' Meat", name: "Cheesy OMG Burger", price: 145, desc: "Cheesy OMG upgrade." },
+			{ id: "buns-doubleomg", category: "Buns n' Meat", name: "Double OMG Burger", price: 180, desc: "Double patty burger." },
+			{ id: "buns-baconomg", category: "Buns n' Meat", name: "Bacon OMG Burger", price: 160, desc: "Bacon-loaded burger." },
+			{ id: "buns-chicken", category: "Buns n' Meat", name: "Chicken Burger", price: 120, desc: "Served with potato chips." },
+			{ id: "buns-cheesychicken", category: "Buns n' Meat", name: "Cheesy Chicken Burger", price: 135, desc: "Cheesy chicken burger." },
+
+			{ id: "rice-burgersteak", category: "Rice Meal", name: "2pcs Burger Steak", price: 150, desc: "Served with sides." },
+			{ id: "rice-tenders", category: "Rice Meal", name: "2pcs Chicken Tenders", price: 150, desc: "Served with sides." },
+			{ id: "rice-hungarian", category: "Rice Meal", name: "Hungarian Sausage", price: 160, desc: "Served with sides." },
+			{ id: "rice-fillet", category: "Rice Meal", name: "Chicken Fillet", price: 150, desc: "Served with sides." },
+
+			{ id: "overload-signature", category: "Mac Chicken Fries Overload", name: "Yoowee Signature Overload", price: 250, desc: "Mac n chiz, fries, chicken tenders, coleslaw, corn, bacon bits." },
+			{ id: "overload-bacon", category: "Mac Chicken Fries Overload", name: "Bacon Overload", price: 225, desc: "Mac n chiz, fries, chicken tenders, bacon bits." },
+			{ id: "overload-corn", category: "Mac Chicken Fries Overload", name: "Cheesy Corn Overload", price: 230, desc: "Mac n chiz, fries, chicken tenders, butter corn, cheese." },
+			{ id: "overload-cheeseburger", category: "Mac Chicken Fries Overload", name: "Cheeseburger Overload", price: 230, desc: "Mac n chiz, fries, ground beef, cheese, bacon bits." },
+			{ id: "overload-build-your-own", category: "Mac Chicken Fries Overload", name: "Make Your Own Overload", price: 225, desc: "Pick your carbs, protein, toppings, and two sauces." },
+
+			{ id: "coffee-americano", category: "Caffeine", name: "Americano", price: 120, desc: "Freshly brewed coffee." },
+			{ id: "coffee-latte", category: "Caffeine", name: "Espresso Latte", price: 135, desc: "Smooth and balanced." },
+			{ id: "coffee-spanish", category: "Caffeine", name: "Spanish Latte", price: 145, desc: "Sweet creamy latte." },
+			{ id: "coffee-caramel", category: "Caffeine", name: "Caramel Macchiato", price: 150, desc: "Caramel-forward espresso drink." },
+			{ id: "coffee-whitemocha", category: "Caffeine", name: "White Mocha", price: 150, desc: "White chocolate mocha." },
+			{ id: "coffee-darkmocha", category: "Caffeine", name: "Dark Mocha", price: 150, desc: "Deep cocoa and coffee." },
+			{ id: "coffee-saltedcaramel", category: "Caffeine", name: "Salted Caramel", price: 150, desc: "Sweet with salted finish." },
+			{ id: "coffee-icedchoco", category: "Caffeine", name: "Iced Choco", price: 120, desc: "Chocolate iced drink." },
+
+			{ id: "refresh-rootbeer", category: "Refreshers", name: "Root Beer", price: 40, desc: "Classic soft drink." },
+			{ id: "refresh-rootbeerfloat", category: "Refreshers", name: "Root Beer Float", price: 75, desc: "Root beer with creamy float." },
+			{ id: "refresh-pinkcloud", category: "Refreshers", name: "Pink Cloud Float", price: 75, desc: "Sweet creamy refresher." },
+			{ id: "refresh-icedtea", category: "Refreshers", name: "Iced Tea", price: 40, desc: "House iced tea." },
+			{ id: "refresh-lemonade", category: "Refreshers", name: "Lemonade", price: 50, desc: "Fresh citrus drink." },
+			{ id: "refresh-water", category: "Refreshers", name: "Bottled Water", price: 25, desc: "Mineral water." },
+			{ id: "refresh-pale", category: "Refreshers", name: "Pale Pilsen in Can", price: 85, desc: "Chilled canned beer." }
+		];
+
+		const categoryOrder = [
+			"Starters",
+			"Buns n' Meat",
+			"Rice Meal",
+			"Mac Chicken Fries Overload",
+			"Caffeine",
+			"Refreshers"
+		];
+
+		const state = {
+			quantities: Object.fromEntries(products.map((p) => [p.id, 0])),
+			availability: {},
+			customizations: {}
+		};
+
+		const pageButtons = Array.from(document.querySelectorAll(".menu button"));
+		const pages = Array.from(document.querySelectorAll(".page"));
+		const previewGrid = document.getElementById("previewGrid");
+		const orderGrid = document.getElementById("orderGrid");
+		const toOrderBtn = document.getElementById("toOrderBtn");
+		const toPaymentBtn = document.getElementById("toPaymentBtn");
+		const backToMenuBtn = document.getElementById("backToMenuBtn");
+		const backToOrderBtn = document.getElementById("backToOrderBtn");
+		const topBackToMenuBtn = document.getElementById("topBackToMenuBtn");
+		const topBackToOrderBtn = document.getElementById("topBackToOrderBtn");
+		const page2Error = document.getElementById("page2Error");
+
+		const checkoutItems = document.getElementById("checkoutItems");
+		const itemsTotalEl = document.getElementById("itemsTotal");
+		const grandTotalEl = document.getElementById("grandTotal");
+		const checkoutForm = document.getElementById("checkoutForm");
+		const checkoutError = document.getElementById("checkoutError");
+		const gcashBox = document.getElementById("gcashBox");
+		const gcashRef = document.getElementById("gcashRef");
+
+		function toPeso(value) {
+			return `PHP ${value.toFixed(2)}`;
+		}
+
+		function isOverloadProduct(productOrId) {
+			const product = typeof productOrId === "string" ? products.find((item) => item.id === productOrId) : productOrId;
+			return product?.id === CUSTOM_OVERLOAD_ID;
+		}
+
+		function createDefaultCustomization() {
+			return {
+				carbs: overloadChoices.carbs[0],
+				protein: overloadChoices.proteins[0],
+				toppings: ["Cheese", "Coleslaw"],
+				sauce1: overloadChoices.sauces[0],
+				sauce2: overloadChoices.sauces[5]
+			};
+		}
+
+		function ensureCustomizationState() {
+			products.forEach((product) => {
+				if (isOverloadProduct(product) && !state.customizations[product.id]) {
+					state.customizations[product.id] = createDefaultCustomization();
+				}
+			});
+		}
+
+		function getCustomization(productId) {
+			ensureCustomizationState();
+			return state.customizations[productId];
+		}
+
+		function describeCustomization(customization) {
+			return `Carbs: ${customization.carbs}; Protein: ${customization.protein}; Toppings: ${customization.toppings.join(", ") || "None"}; Sauces: ${customization.sauce1}, ${customization.sauce2}`;
+		}
+
+		function renderOverloadCustomizer(productId) {
+			const customization = getCustomization(productId);
+			return `
+				<div class="customizer">
+					<p class="customizer-title">Customize Your Overload</p>
+					<div class="customizer-group">
+						<span class="customizer-label">Choose Your Carbs</span>
+						<div class="choice-row">
+							${overloadChoices.carbs
+								.map((choice) => `<button type="button" class="choice-btn ${customization.carbs === choice ? "active" : ""}" data-custom-type="carbs" data-id="${productId}" data-value="${choice}">${choice}</button>`)
+								.join("")}
+						</div>
+					</div>
+					<div class="customizer-group">
+						<span class="customizer-label">Choose Your Protein</span>
+						<div class="choice-row">
+							${overloadChoices.proteins
+								.map((choice) => `<button type="button" class="choice-btn ${customization.protein === choice ? "active" : ""}" data-custom-type="protein" data-id="${productId}" data-value="${choice}">${choice}</button>`)
+								.join("")}
+						</div>
+					</div>
+					<div class="customizer-group">
+						<span class="customizer-label">Pick Your Toppings</span>
+						<div class="choice-row">
+							${overloadChoices.toppings
+								.map((choice) => `<button type="button" class="choice-btn ${customization.toppings.includes(choice) ? "active" : ""}" data-custom-type="topping" data-id="${productId}" data-value="${choice}">${choice}</button>`)
+								.join("")}
+						</div>
+					</div>
+					<div class="customizer-group">
+						<label for="${productId}-sauce1">Sauce 1</label>
+						<select id="${productId}-sauce1" data-custom-type="sauce1" data-id="${productId}">
+							${overloadChoices.sauces.map((choice) => `<option value="${choice}" ${customization.sauce1 === choice ? "selected" : ""}>${choice}</option>`).join("")}
+						</select>
+					</div>
+					<div class="customizer-group">
+						<label for="${productId}-sauce2">Sauce 2</label>
+						<select id="${productId}-sauce2" data-custom-type="sauce2" data-id="${productId}">
+							${overloadChoices.sauces.map((choice) => `<option value="${choice}" ${customization.sauce2 === choice ? "selected" : ""}>${choice}</option>`).join("")}
+						</select>
+					</div>
+					<p class="custom-summary">${describeCustomization(customization)}</p>
+				</div>
+			`;
+		}
+
+		function defaultAvailabilityMap() {
+			return Object.fromEntries(products.map((p) => [p.id, true]));
+		}
+
+		function readProductAvailability() {
+			const defaults = defaultAvailabilityMap();
+			try {
+				const raw = localStorage.getItem(PRODUCT_AVAILABILITY_KEY);
+				if (!raw) {
+					return defaults;
+				}
+				const parsed = JSON.parse(raw);
+				if (!parsed || typeof parsed !== "object") {
+					return defaults;
+				}
+				return { ...defaults, ...parsed };
+			} catch {
+				return defaults;
+			}
+		}
+
+		function syncAvailabilityFromStorage() {
+			state.availability = readProductAvailability();
+			products.forEach((p) => {
+				if (state.availability[p.id] === false) {
+					state.quantities[p.id] = 0;
+				}
+			});
+		}
+
+		function isAvailable(productId) {
+			return state.availability[productId] !== false;
+		}
+
+		function activeOrderItems() {
+			return products
+				.filter((p) => isAvailable(p.id) && Number(state.quantities[p.id]) > 0)
+				.map((p) => ({
+					...p,
+					qty: Number(state.quantities[p.id]),
+					subtotal: Number(state.quantities[p.id]) * p.price,
+					customization: isOverloadProduct(p) ? { ...getCustomization(p.id) } : null
+				}));
+		}
+
+		function calculateItemsTotal() {
+			return activeOrderItems().reduce((sum, item) => sum + item.subtotal, 0);
+		}
+
+		function updateCheckoutButtonState() {
+			const hasItems = activeOrderItems().length > 0;
+			toPaymentBtn.disabled = !hasItems;
+			if (hasItems) {
+				page2Error.textContent = "";
+			}
+		}
+
+		function renderPreviewGrid() {
+			previewGrid.innerHTML = categoryOrder
+				.map((category) => {
+					const categoryItems = products.filter((item) => item.category === category);
+					if (!categoryItems.length) {
+						return "";
+					}
+
+					return `
+						<section class="category-block">
+							<h3 class="category-title">${category}</h3>
+							<div class="card-grid">
+								${categoryItems
+									.map(
+										(p) => `
+											<article class="product-card ${isAvailable(p.id) ? "" : "unavailable"}">
+												<h3 class="product-name">${p.name}</h3>
+												<p class="price">${toPeso(p.price)}</p>
+												<p class="desc">${p.desc}</p>
+												${isOverloadProduct(p) ? '<p class="custom-summary">Customizable: carbs, protein, toppings, and 2 sauces.</p>' : ""}
+												${isAvailable(p.id) ? "" : '<p class="status-pill">Unavailable</p>'}
+											</article>
+										`
+									)
+									.join("")}
+							</div>
+						</section>
+					`;
+				})
+				.join("");
+		}
+
+		function renderOrderGrid() {
+			syncAvailabilityFromStorage();
+			orderGrid.innerHTML = categoryOrder
+				.map((category) => {
+					const categoryItems = products.filter((item) => item.category === category);
+					if (!categoryItems.length) {
+						return "";
+					}
+
+					return `
+						<section class="category-block">
+							<h3 class="category-title">${category}</h3>
+							<div class="card-grid">
+								${categoryItems
+									.map(
+										(p) => `
+											<article class="product-card ${isAvailable(p.id) ? "" : "unavailable"}">
+												<h3 class="product-name">${p.name}</h3>
+												<p class="price">${toPeso(p.price)}</p>
+												<p class="desc">${p.desc}</p>
+												${isOverloadProduct(p) && isAvailable(p.id) ? renderOverloadCustomizer(p.id) : ""}
+												${
+													isAvailable(p.id)
+														? `<div class="qty-wrap">
+															<label for="qty-${p.id}">Qty</label>
+															<div class="qty-controls" aria-label="Quantity controls for ${p.name}">
+																<button type="button" class="qty-btn" data-action="decrease" data-id="${p.id}" aria-label="Decrease quantity for ${p.name}">-</button>
+																<input id="qty-${p.id}" type="text" value="${state.quantities[p.id]}" data-id="${p.id}" inputmode="numeric" readonly />
+																<button type="button" class="qty-btn" data-action="increase" data-id="${p.id}" aria-label="Increase quantity for ${p.name}">+</button>
+															</div>
+														</div>`
+														: '<p class="unavailable-note">Currently not available</p>'
+												}
+											</article>
+										`
+									)
+									.join("")}
+							</div>
+						</section>
+					`;
+				})
+				.join("");
+
+			orderGrid.querySelectorAll(".qty-btn").forEach((button) => {
+				button.addEventListener("click", () => {
+					const id = button.dataset.id;
+					if (!isAvailable(id)) {
+						return;
+					}
+					const action = button.dataset.action;
+					const current = Number(state.quantities[id]) || 0;
+					const next = action === "increase" ? current + 1 : current - 1;
+					state.quantities[id] = Math.max(0, Math.min(99, next));
+					renderOrderGrid();
+					updateCheckoutButtonState();
+				});
+			});
+
+			orderGrid.querySelectorAll(".choice-btn").forEach((button) => {
+				button.addEventListener("click", () => {
+					const productId = button.dataset.id;
+					const type = button.dataset.customType;
+					const value = button.dataset.value;
+					const customization = getCustomization(productId);
+
+					if (type === "carbs") {
+						customization.carbs = value;
+					} else if (type === "protein") {
+						customization.protein = value;
+					} else if (type === "topping") {
+						customization.toppings = customization.toppings.includes(value)
+							? customization.toppings.filter((item) => item !== value)
+							: [...customization.toppings, value];
+					}
+
+					renderOrderGrid();
+				});
+			});
+
+			orderGrid.querySelectorAll("select[data-custom-type]").forEach((select) => {
+				select.addEventListener("change", () => {
+					const productId = select.dataset.id;
+					const type = select.dataset.customType;
+					const customization = getCustomization(productId);
+					customization[type] = select.value;
+					renderOrderGrid();
+				});
+			});
+
+			updateCheckoutButtonState();
+		}
+
+		function renderCheckoutSummary() {
+			const items = activeOrderItems();
+			if (!items.length) {
+				checkoutItems.innerHTML = "<li>No items selected.</li>";
+			} else {
+				checkoutItems.innerHTML = items
+					.map((item) => `<li>${item.name} x ${item.qty} = ${toPeso(item.subtotal)}${item.customization ? `<br><span class="custom-summary">${describeCustomization(item.customization)}</span>` : ""}</li>`)
+					.join("");
+			}
+
+			const itemsTotal = calculateItemsTotal();
+			const grand = itemsTotal + DELIVERY_FEE;
+			itemsTotalEl.textContent = toPeso(itemsTotal);
+			grandTotalEl.textContent = toPeso(grand);
+		}
+
+		function showPage(pageId) {
+			syncAvailabilityFromStorage();
+			pages.forEach((page) => page.classList.toggle("active", page.id === pageId));
+			pageButtons.forEach((btn) => btn.classList.toggle("active", btn.dataset.target === pageId));
+
+			if (pageId === "page1") {
+				renderPreviewGrid();
+			}
+
+			if (pageId === "page2") {
+				renderOrderGrid();
+			}
+
+			if (pageId === "page3") {
+				renderCheckoutSummary();
+			}
+		}
+
+		function getPaymentMethod() {
+			const selected = checkoutForm.querySelector("input[name='paymentMethod']:checked");
+			return selected ? selected.value : "COD";
+		}
+
+		function syncPaymentUI() {
+			const method = getPaymentMethod();
+			const isGcash = method === "GCash";
+			gcashBox.classList.toggle("active", isGcash);
+			gcashRef.required = isGcash;
+			if (!isGcash) {
+				gcashRef.value = "";
+			}
+		}
+
+		function readOrders() {
+			try {
+				const raw = localStorage.getItem("yooweeOrders");
+				if (!raw) {
+					return [];
+				}
+				const parsed = JSON.parse(raw);
+				return Array.isArray(parsed) ? parsed : [];
+			} catch {
+				return [];
+			}
+		}
+
+		function writeOrders(orders) {
+			localStorage.setItem("yooweeOrders", JSON.stringify(orders));
+		}
+
+		pageButtons.forEach((button) => {
+			button.addEventListener("click", () => {
+				showPage(button.dataset.target);
+			});
+		});
+
+		toOrderBtn.addEventListener("click", () => showPage("page2"));
+		backToMenuBtn.addEventListener("click", () => showPage("page1"));
+		backToOrderBtn.addEventListener("click", () => showPage("page2"));
+		topBackToMenuBtn?.addEventListener("click", () => showPage("page1"));
+		topBackToOrderBtn?.addEventListener("click", () => showPage("page2"));
+
+		toPaymentBtn.addEventListener("click", () => {
+			const hasItems = activeOrderItems().length > 0;
+			if (!hasItems) {
+				page2Error.textContent = "Please pick at least one item before checking out.";
+				return;
+			}
+			page2Error.textContent = "";
+			showPage("page3");
+		});
+
+		checkoutForm.querySelectorAll("input[name='paymentMethod']").forEach((radio) => {
+			radio.addEventListener("change", syncPaymentUI);
+		});
+
+		checkoutForm.addEventListener("submit", (event) => {
+			event.preventDefault();
+			checkoutError.textContent = "";
+
+			const items = activeOrderItems();
+			if (!items.length) {
+				checkoutError.textContent = "No order selected. Please add items first.";
+				showPage("page2");
+				return;
+			}
+
+			const customerName = document.getElementById("customerName").value.trim();
+			const customerNumber = document.getElementById("customerNumber").value.trim();
+			const customerAddress = document.getElementById("customerAddress").value.trim();
+			const paymentMethod = getPaymentMethod();
+			const refValue = gcashRef.value.trim();
+
+			if (!customerName || !customerAddress) {
+				checkoutError.textContent = "Please complete customer name and address.";
+				return;
+			}
+
+			if (!/^\d{11}$/.test(customerNumber)) {
+				checkoutError.textContent = "Customer number must be exactly 11 digits.";
+				return;
+			}
+
+			if (paymentMethod === "GCash" && !refValue) {
+				checkoutError.textContent = "Reference / receipt number is required for GCash payment.";
+				return;
+			}
+
+			const itemsTotal = calculateItemsTotal();
+			const order = {
+				id: `YOOWEE-${Date.now()}`,
+				date: new Date().toLocaleString(),
+				customerName,
+				customerNumber,
+				customerAddress,
+				paymentMethod,
+				gcashRef: paymentMethod === "GCash" ? refValue : "N/A",
+				items,
+				itemsTotal,
+				deliveryFee: DELIVERY_FEE,
+				totalAmount: itemsTotal + DELIVERY_FEE
+			};
+
+			const allOrders = readOrders();
+			allOrders.push(order);
+			writeOrders(allOrders);
+
+			alert(`Order placed successfully. Total amount: ${toPeso(order.totalAmount)}`);
+
+			// Reset customer flow for the next order.
+			checkoutForm.reset();
+			products.forEach((p) => {
+				state.quantities[p.id] = 0;
+			});
+			state.customizations = {};
+			ensureCustomizationState();
+			renderOrderGrid();
+			renderCheckoutSummary();
+			syncPaymentUI();
+			showPage("page1");
+		});
+
+		window.addEventListener("storage", (event) => {
+			if (event.key === PRODUCT_AVAILABILITY_KEY) {
+				syncAvailabilityFromStorage();
+				renderPreviewGrid();
+				renderOrderGrid();
+				renderCheckoutSummary();
+				updateCheckoutButtonState();
+			}
+		});
+
+		syncAvailabilityFromStorage();
+		ensureCustomizationState();
+		renderPreviewGrid();
+		renderOrderGrid();
+		renderCheckoutSummary();
+		syncPaymentUI();
+	</script>
+</body>
+</html>

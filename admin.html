@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Yoowee Admin Dashboard</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Lilita+One&display=swap" rel="stylesheet" />
+	<style>
+		:root {
+			--cream: #fff7ec;
+			--sand: #ffe8c2;
+			--orange: #f9a825;
+			--teal: #1f2d6b;
+			--teal-dark: #151f4c;
+			--ink: #222222;
+			--red: #d63a2f;
+			--muted: #5c5c5c;
+			--danger: #b3261e;
+			--white: #ffffff;
+			--radius: 18px;
+			--shadow: 0 10px 30px rgba(20, 20, 20, 0.14);
+			--max-width: 1120px;
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		html,
+		body {
+			margin: 0;
+			padding: 0;
+			min-height: 100%;
+			font-family: "Baloo 2", "Trebuchet MS", sans-serif;
+			background: var(--cream);
+			color: var(--ink);
+			position: relative;
+		}
+
+		body::before {
+			content: "";
+			position: fixed;
+			inset: 0;
+			z-index: 50;
+			background:
+				repeating-linear-gradient(
+					90deg,
+					var(--red) 0 18px,
+					var(--white) 18px 36px
+				) top / 108px 14px repeat-x,
+				repeating-linear-gradient(
+					90deg,
+					var(--white) 0 18px,
+					var(--red) 18px 36px
+				) bottom / 108px 14px repeat-x;
+			pointer-events: none;
+			animation: top-bottom-borders-flow 5s linear infinite;
+		}
+
+		body::after {
+			content: "";
+			position: fixed;
+			left: 0;
+			right: 0;
+			top: 14px;
+			bottom: 14px;
+			z-index: 49;
+			background:
+				repeating-linear-gradient(
+					180deg,
+					var(--red) 0 18px,
+					var(--white) 18px 36px
+				) left top / 8px 108px repeat-y,
+				repeating-linear-gradient(
+					180deg,
+					var(--white) 0 18px,
+					var(--red) 18px 36px
+				) right top / 8px 108px repeat-y;
+			border-top: 1px solid rgba(214, 58, 47, 0.14);
+			border-bottom: 1px solid rgba(214, 58, 47, 0.14);
+			pointer-events: none;
+			animation: side-borders-up 5s linear infinite;
+		}
+
+		@keyframes side-borders-up {
+			from {
+				background-position: left 0 top 0, right 0 top 0;
+			}
+			to {
+				background-position: left 0 top -108px, right 0 top -108px;
+			}
+		}
+
+		@keyframes top-bottom-borders-flow {
+			from {
+				background-position: 0 top, 0 bottom;
+			}
+			to {
+				background-position: -108px top, -108px bottom;
+			}
+		}
+
+		.topbar {
+			position: sticky;
+			top: 14px;
+			z-index: 10;
+			background: rgba(255, 248, 235, 0.9);
+			backdrop-filter: blur(10px);
+			border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+		}
+
+		.topbar-inner {
+			width: min(100%, var(--max-width));
+			margin: 0 auto;
+			padding: 0.7rem 1rem;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 0.8rem;
+			flex-wrap: wrap;
+		}
+
+		.brand {
+			font-family: "Lilita One", Impact, sans-serif;
+			letter-spacing: 0.05em;
+			font-size: 1.15rem;
+			text-transform: uppercase;
+		}
+
+		.wordmark {
+			display: inline-flex;
+			align-items: baseline;
+			gap: 0.22em;
+			font-family: "Lilita One", Impact, sans-serif;
+			letter-spacing: 0.02em;
+			line-height: 1;
+			text-transform: none;
+		}
+
+		.wordmark-yoo {
+			color: var(--red);
+			-webkit-text-stroke: 1px rgba(34, 34, 34, 0.22);
+			text-shadow: 1px 1px 0 rgba(34, 34, 34, 0.1);
+			animation: wordmark-shine 2.8s ease-in-out infinite;
+		}
+
+		.wordmark-diner {
+			color: #f6b233;
+			-webkit-text-stroke: 1px rgba(34, 34, 34, 0.22);
+			text-shadow: 1px 1px 0 rgba(34, 34, 34, 0.1);
+			animation: wordmark-shine 2.8s ease-in-out infinite;
+			animation-delay: 0.25s;
+		}
+
+		@keyframes wordmark-shine {
+			0%,
+			100% {
+				filter: brightness(1);
+				text-shadow: 1px 1px 0 rgba(34, 34, 34, 0.1), 0 0 0 rgba(255, 255, 255, 0);
+			}
+			45% {
+				filter: brightness(1.34);
+				text-shadow: 1px 1px 0 rgba(34, 34, 34, 0.1), 0 0 16px rgba(255, 255, 255, 0.95), 0 0 26px rgba(246, 178, 51, 0.72);
+			}
+			58% {
+				filter: brightness(1.22);
+				text-shadow: 1px 1px 0 rgba(34, 34, 34, 0.1), 0 0 10px rgba(255, 255, 255, 0.72), 0 0 18px rgba(246, 178, 51, 0.48);
+			}
+		}
+
+		.brand-wrap {
+			display: flex;
+			align-items: center;
+			gap: 0.75rem;
+		}
+
+		.logo-mark {
+			width: 64px;
+			height: 64px;
+			flex: 0 0 auto;
+			display: block;
+			object-fit: cover;
+			border-radius: 50%;
+			background: #ffffff;
+			filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.12));
+			transform-origin: center bottom;
+			animation: logo-bounce 2.6s ease-in-out infinite;
+		}
+
+		.hero-logo {
+			animation-delay: 0.15s;
+		}
+
+		@keyframes logo-bounce {
+			0%,
+			100% {
+				transform: translateY(0) scale(1);
+			}
+			30% {
+				transform: translateY(-6px) scale(1.02);
+			}
+			55% {
+				transform: translateY(0) scale(0.995);
+			}
+		}
+
+		.logo-stack {
+			display: flex;
+			flex-direction: column;
+			gap: 0.08rem;
+		}
+
+		.logo-kicker {
+			font-size: 0.72rem;
+			font-weight: 800;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			color: var(--teal);
+		}
+
+		.shell {
+			width: min(100%, var(--max-width));
+			margin: 0 auto;
+			padding: 1rem;
+		}
+
+		.hero {
+			border-radius: calc(var(--radius) + 4px);
+			background: linear-gradient(120deg, #fff3de, #fff3de);
+			border: 4px solid var(--red);
+			padding: 1.2rem;
+			box-shadow: var(--shadow);
+			margin-bottom: 1rem;
+			overflow: hidden;
+			position: relative;
+		}
+
+		.hero::after {
+			content: "";
+			width: 230px;
+			height: 230px;
+			border-radius: 50%;
+			background: rgba(214, 58, 47, 0.12);
+			position: absolute;
+			right: -70px;
+			top: -70px;
+		}
+
+		.hero-head {
+			display: flex;
+			align-items: center;
+			gap: 1rem;
+			position: relative;
+			z-index: 1;
+		}
+
+		.hero-logo {
+			width: clamp(82px, 12vw, 118px);
+			height: clamp(82px, 12vw, 118px);
+			flex: 0 0 auto;
+		}
+
+		.hero-copy {
+			min-width: 0;
+		}
+
+		.hero h1 {
+			margin: 0;
+			font-size: clamp(1.7rem, 3.4vw, 2.4rem);
+			font-family: "Lilita One", Impact, sans-serif;
+			line-height: 1.1;
+			text-transform: uppercase;
+			color: var(--red);
+		}
+
+		.hero p {
+			margin: 0.5rem 0 0;
+			color: #3f3a2a;
+		}
+
+		.panel {
+			border-radius: var(--radius);
+			background: var(--white);
+			box-shadow: var(--shadow);
+			padding: 1rem;
+			border: 2px solid rgba(214, 58, 47, 0.22);
+			margin-bottom: 0.9rem;
+		}
+
+		.admin-lock {
+			text-align: center;
+			padding: 1.5rem 1rem;
+		}
+
+		.field {
+			display: flex;
+			flex-direction: column;
+			gap: 0.35rem;
+			margin-bottom: 0.8rem;
+		}
+
+		.field label {
+			font-weight: 700;
+		}
+
+		.field input {
+			width: min(100%, 320px);
+			margin: 0 auto;
+			border: 1px solid rgba(0, 0, 0, 0.23);
+			border-radius: 10px;
+			padding: 0.6rem 0.7rem;
+			font: inherit;
+			background: #fffcf5;
+		}
+
+		.actions {
+			margin-top: 1rem;
+			display: flex;
+			gap: 0.6rem;
+			flex-wrap: wrap;
+		}
+
+		.btn {
+			border: 0;
+			border-radius: 12px;
+			padding: 0.72rem 1rem;
+			font-weight: 800;
+			cursor: pointer;
+			font-family: "Baloo 2", "Trebuchet MS", sans-serif;
+			transition: transform 0.2s ease, opacity 0.2s ease;
+		}
+
+		.btn:hover:not(:disabled) {
+			transform: translateY(-1px);
+		}
+
+		.btn-secondary {
+			background: var(--teal);
+			color: var(--white);
+		}
+
+		.btn-primary {
+			background: var(--orange);
+			color: var(--white);
+		}
+
+		.btn-neutral {
+			background: #f2f2f2;
+			color: #222;
+		}
+
+		.btn-danger {
+			background: var(--red);
+			color: #fff;
+		}
+
+		.small-note {
+			margin: 0.55rem 0 0;
+			font-size: 0.86rem;
+			color: var(--muted);
+		}
+
+		.error {
+			color: var(--danger);
+			font-weight: 700;
+			margin-top: 0.55rem;
+			min-height: 1.2rem;
+		}
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 0.94rem;
+			background: #fff;
+			border-radius: 12px;
+			overflow: hidden;
+		}
+
+		th,
+		td {
+			border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+			padding: 0.6rem;
+			text-align: left;
+			vertical-align: top;
+		}
+
+		th {
+			background: #fff6e6;
+			color: var(--teal-dark);
+			font-size: 0.84rem;
+			text-transform: uppercase;
+			letter-spacing: 0.04em;
+		}
+
+		.chip {
+			display: inline-block;
+			border-radius: 999px;
+			padding: 0.22rem 0.55rem;
+			font-size: 0.76rem;
+			font-weight: 800;
+			background: #eaf0ff;
+			color: var(--teal-dark);
+		}
+
+		.chip.off {
+			background: #fce0dc;
+			color: #8f2118;
+		}
+
+		.availability-list {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+			gap: 0.65rem;
+			margin-top: 0.7rem;
+		}
+
+		.avail-item {
+			border: 1px solid rgba(214, 58, 47, 0.18);
+			border-radius: 12px;
+			padding: 0.65rem;
+			background: #fffdf8;
+		}
+
+		.avail-item h4 {
+			margin: 0 0 0.35rem;
+			font-size: 0.98rem;
+		}
+
+		.avail-meta {
+			margin: 0 0 0.45rem;
+			font-size: 0.82rem;
+			color: var(--muted);
+		}
+
+		@media (max-width: 860px) {
+			.hero-head {
+				align-items: flex-start;
+			}
+
+			table,
+			thead,
+			tbody,
+			tr,
+			th,
+			td {
+				display: block;
+			}
+			thead {
+				display: none;
+			}
+			tr {
+				border: 1px solid rgba(0, 0, 0, 0.1);
+				border-radius: 12px;
+				margin-bottom: 0.75rem;
+				overflow: hidden;
+			}
+			td {
+				border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+			}
+			td::before {
+				content: attr(data-label) ": ";
+				font-weight: 800;
+			}
+		}
+
+		@media (max-width: 560px) {
+			.brand-wrap {
+				gap: 0.55rem;
+			}
+
+			.logo-mark {
+				width: 52px;
+				height: 52px;
+			}
+
+			.hero-head {
+				flex-direction: column;
+				gap: 0.75rem;
+			}
+		}
+	</style>
+</head>
+<body>
+	<header class="topbar">
+		<div class="topbar-inner">
+			<div class="brand-wrap">
+				<img class="logo-mark" src="Unknown-5.jpg" alt="Yoo-wee Diner logo" />
+				<div class="logo-stack">
+					<div class="logo-kicker">Admin Control</div>
+					<div class="brand"><span class="wordmark"><span class="wordmark-yoo">Yoo-Wee</span><span class="wordmark-diner">Diner</span></span></div>
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<main class="shell">
+		<section class="hero">
+			<div class="hero-head">
+				<img class="logo-mark hero-logo" src="Unknown-5.jpg" alt="Yoo-wee Diner logo" />
+				<div class="hero-copy">
+					<h1><span class="wordmark"><span class="wordmark-yoo">Yoo-Wee</span><span class="wordmark-diner">Diner</span></span> Admin Dashboard</h1>
+				</div>
+			</div>
+		</section>
+
+		<section id="adminLock" class="panel admin-lock">
+			<h2>Admin Access</h2>
+			<div class="field">
+				<label for="adminPass">Passcode</label>
+				<input id="adminPass" type="password" placeholder="Enter passcode" />
+			</div>
+			<div class="actions" style="justify-content:center;">
+				<button id="adminLoginBtn" class="btn btn-primary" type="button">Unlock Admin Dashboard</button>
+			</div>
+			<p id="adminError" class="error" aria-live="polite"></p>
+		</section>
+
+		<section id="adminPanel" class="panel" style="display:none;">
+			<h2>Product Availability Controls</h2>
+			<p class="small-note">Mark products unavailable to block ordering on the customer site.</p>
+			<div class="actions">
+				<button id="markAllAvailableBtn" class="btn btn-neutral" type="button">Mark All Available</button>
+				<button id="markAllUnavailableBtn" class="btn btn-danger" type="button">Mark All Unavailable</button>
+			</div>
+			<div id="availabilityList" class="availability-list"></div>
+
+			<hr style="border:0;border-top:1px solid rgba(0,0,0,0.1);margin:1rem 0;" />
+
+			<h2>Customer Orders</h2>
+			<div class="actions">
+				<button id="refreshOrdersBtn" class="btn btn-neutral" type="button">Refresh</button>
+				<button id="clearOrdersBtn" class="btn btn-primary" type="button">Clear All Orders</button>
+			</div>
+			<div style="overflow:auto; margin-top: 0.7rem;">
+				<table>
+					<thead>
+						<tr>
+							<th>Date</th>
+							<th>Customer Info</th>
+							<th>Orders</th>
+							<th>Payment</th>
+							<th>Total</th>
+						</tr>
+					</thead>
+					<tbody id="ordersTableBody"></tbody>
+				</table>
+			</div>
+		</section>
+	</main>
+
+	<script>
+		const ADMIN_PASSCODE = "admin123";
+		const PRODUCT_AVAILABILITY_KEY = "yooweeProductAvailability";
+		const products = [
+			{ id: "starter-macnchiz", category: "Starters", name: "Mac N Chiz" },
+			{ id: "starter-cajunfries", category: "Starters", name: "Cajun Fries" },
+			{ id: "starter-friesoverload", category: "Starters", name: "Fries Overload" },
+			{ id: "starter-potatochips", category: "Starters", name: "Potato Chips" },
+			{ id: "starter-buttercorn", category: "Starters", name: "Cheesy Butter Corn" },
+			{ id: "starter-jalapeno", category: "Starters", name: "Cheesy Jalapeno" },
+			{ id: "buns-omg", category: "Buns n' Meat", name: "OMG Burger" },
+			{ id: "buns-cheesyomg", category: "Buns n' Meat", name: "Cheesy OMG Burger" },
+			{ id: "buns-doubleomg", category: "Buns n' Meat", name: "Double OMG Burger" },
+			{ id: "buns-baconomg", category: "Buns n' Meat", name: "Bacon OMG Burger" },
+			{ id: "buns-chicken", category: "Buns n' Meat", name: "Chicken Burger" },
+			{ id: "buns-cheesychicken", category: "Buns n' Meat", name: "Cheesy Chicken Burger" },
+			{ id: "rice-burgersteak", category: "Rice Meal", name: "2pcs Burger Steak" },
+			{ id: "rice-tenders", category: "Rice Meal", name: "2pcs Chicken Tenders" },
+			{ id: "rice-hungarian", category: "Rice Meal", name: "Hungarian Sausage" },
+			{ id: "rice-fillet", category: "Rice Meal", name: "Chicken Fillet" },
+			{ id: "overload-signature", category: "Mac Chicken Fries Overload", name: "Yoowee Signature Overload" },
+			{ id: "overload-bacon", category: "Mac Chicken Fries Overload", name: "Bacon Overload" },
+			{ id: "overload-corn", category: "Mac Chicken Fries Overload", name: "Cheesy Corn Overload" },
+			{ id: "overload-cheeseburger", category: "Mac Chicken Fries Overload", name: "Cheeseburger Overload" },
+			{ id: "coffee-americano", category: "Caffeine", name: "Americano" },
+			{ id: "coffee-latte", category: "Caffeine", name: "Espresso Latte" },
+			{ id: "coffee-spanish", category: "Caffeine", name: "Spanish Latte" },
+			{ id: "coffee-caramel", category: "Caffeine", name: "Caramel Macchiato" },
+			{ id: "coffee-whitemocha", category: "Caffeine", name: "White Mocha" },
+			{ id: "coffee-darkmocha", category: "Caffeine", name: "Dark Mocha" },
+			{ id: "coffee-saltedcaramel", category: "Caffeine", name: "Salted Caramel" },
+			{ id: "coffee-icedchoco", category: "Caffeine", name: "Iced Choco" },
+			{ id: "refresh-rootbeer", category: "Refreshers", name: "Root Beer" },
+			{ id: "refresh-rootbeerfloat", category: "Refreshers", name: "Root Beer Float" },
+			{ id: "refresh-pinkcloud", category: "Refreshers", name: "Pink Cloud Float" },
+			{ id: "refresh-icedtea", category: "Refreshers", name: "Iced Tea" },
+			{ id: "refresh-lemonade", category: "Refreshers", name: "Lemonade" },
+			{ id: "refresh-water", category: "Refreshers", name: "Bottled Water" },
+			{ id: "refresh-pale", category: "Refreshers", name: "Pale Pilsen in Can" }
+		];
+		const state = { availability: {} };
+
+		const adminLock = document.getElementById("adminLock");
+		const adminPanel = document.getElementById("adminPanel");
+		const adminPass = document.getElementById("adminPass");
+		const adminLoginBtn = document.getElementById("adminLoginBtn");
+		const adminError = document.getElementById("adminError");
+		const availabilityList = document.getElementById("availabilityList");
+		const markAllAvailableBtn = document.getElementById("markAllAvailableBtn");
+		const markAllUnavailableBtn = document.getElementById("markAllUnavailableBtn");
+		const ordersTableBody = document.getElementById("ordersTableBody");
+		const refreshOrdersBtn = document.getElementById("refreshOrdersBtn");
+		const clearOrdersBtn = document.getElementById("clearOrdersBtn");
+
+		function toPeso(value) {
+			return `PHP ${Number(value).toFixed(2)}`;
+		}
+
+		function readOrders() {
+			try {
+				const raw = localStorage.getItem("yooweeOrders");
+				if (!raw) {
+					return [];
+				}
+				const parsed = JSON.parse(raw);
+				return Array.isArray(parsed) ? parsed : [];
+			} catch {
+				return [];
+			}
+		}
+
+		function writeOrders(orders) {
+			localStorage.setItem("yooweeOrders", JSON.stringify(orders));
+		}
+
+		function defaultAvailabilityMap() {
+			return Object.fromEntries(products.map((p) => [p.id, true]));
+		}
+
+		function readAvailability() {
+			const defaults = defaultAvailabilityMap();
+			try {
+				const raw = localStorage.getItem(PRODUCT_AVAILABILITY_KEY);
+				if (!raw) {
+					return defaults;
+				}
+				const parsed = JSON.parse(raw);
+				if (!parsed || typeof parsed !== "object") {
+					return defaults;
+				}
+				return { ...defaults, ...parsed };
+			} catch {
+				return defaults;
+			}
+		}
+
+		function writeAvailability(availability) {
+			localStorage.setItem(PRODUCT_AVAILABILITY_KEY, JSON.stringify(availability));
+		}
+
+		function renderAvailabilityList() {
+			state.availability = readAvailability();
+			availabilityList.innerHTML = products
+				.map((product) => {
+					const isAvailable = state.availability[product.id] !== false;
+					return `
+						<div class="avail-item">
+							<h4>${product.name}</h4>
+							<p class="avail-meta">${product.category}</p>
+							<div class="actions" style="margin-top:0;align-items:center;">
+								<span class="chip ${isAvailable ? "" : "off"}">${isAvailable ? "Available" : "Unavailable"}</span>
+								<button type="button" class="btn ${isAvailable ? "btn-danger" : "btn-secondary"}" data-id="${product.id}" data-action="toggle-availability">
+									${isAvailable ? "Mark Unavailable" : "Mark Available"}
+								</button>
+							</div>
+						</div>
+					`;
+				})
+				.join("");
+		}
+
+		function renderOrdersTable() {
+			const orders = readOrders();
+			if (!orders.length) {
+				ordersTableBody.innerHTML = `
+					<tr>
+						<td data-label="Date">-</td>
+						<td data-label="Customer Info">No orders yet</td>
+						<td data-label="Orders">-</td>
+						<td data-label="Payment">-</td>
+						<td data-label="Total">-</td>
+					</tr>
+				`;
+				return;
+			}
+
+			ordersTableBody.innerHTML = orders
+				.slice()
+				.reverse()
+				.map((order) => {
+					const itemsList = Array.isArray(order.items)
+						? order.items.map((item) => `${item.name} x ${item.qty}`).join(", ")
+						: "-";
+					const paymentDetail =
+						order.paymentMethod === "GCash"
+							? `<span class="chip">GCash</span><br>Ref: ${order.gcashRef || "-"}`
+							: `<span class="chip">COD</span>`;
+
+					return `
+						<tr>
+							<td data-label="Date">${order.date || "-"}</td>
+							<td data-label="Customer Info">
+								${order.customerName || "-"}<br>
+								${order.customerNumber || "-"}<br>
+								${order.customerAddress || "-"}
+							</td>
+							<td data-label="Orders">${itemsList}</td>
+							<td data-label="Payment">${paymentDetail}</td>
+							<td data-label="Total">${toPeso(order.totalAmount || 0)}</td>
+						</tr>
+					`;
+				})
+				.join("");
+		}
+
+		adminLoginBtn.addEventListener("click", () => {
+			adminError.textContent = "";
+			if (adminPass.value === ADMIN_PASSCODE) {
+				adminLock.style.display = "none";
+				adminPanel.style.display = "block";
+				renderAvailabilityList();
+				renderOrdersTable();
+			} else {
+				adminError.textContent = "Invalid passcode.";
+			}
+		});
+
+		availabilityList.addEventListener("click", (event) => {
+			const button = event.target.closest("button[data-action='toggle-availability']");
+			if (!button) {
+				return;
+			}
+
+			const productId = button.dataset.id;
+			const nextAvailability = readAvailability();
+			nextAvailability[productId] = nextAvailability[productId] === false;
+			writeAvailability(nextAvailability);
+			renderAvailabilityList();
+		});
+
+		markAllAvailableBtn.addEventListener("click", () => {
+			const nextAvailability = Object.fromEntries(products.map((p) => [p.id, true]));
+			writeAvailability(nextAvailability);
+			renderAvailabilityList();
+		});
+
+		markAllUnavailableBtn.addEventListener("click", () => {
+			const nextAvailability = Object.fromEntries(products.map((p) => [p.id, false]));
+			writeAvailability(nextAvailability);
+			renderAvailabilityList();
+		});
+
+		refreshOrdersBtn.addEventListener("click", () => {
+			renderAvailabilityList();
+			renderOrdersTable();
+		});
+
+		clearOrdersBtn.addEventListener("click", () => {
+			if (confirm("Clear all customer orders?")) {
+				writeOrders([]);
+				renderOrdersTable();
+			}
+		});
+	</script>
+</body>
+</html>
