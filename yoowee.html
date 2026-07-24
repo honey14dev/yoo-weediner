@@ -1258,12 +1258,14 @@
 				.filter((p) => isAvailable(p.id) && Number(state.quantities[p.id]) > 0)
 				.map((p) => {
 					const customization = isOverloadProduct(p) ? { ...getCustomization(p.id) } : null;
+					const customizationSummary = customization ? describeCustomization(customization) : "";
 					return {
 						...p,
 						qty: Number(state.quantities[p.id]),
 						subtotal: Number(state.quantities[p.id]) * p.price,
 						customization,
-						customizationSummary: customization ? describeCustomization(customization) : ""
+						customizationSummary,
+						adminDisplayName: customizationSummary ? `${p.name} (${customizationSummary})` : p.name
 					};
 				});
 		}
@@ -1418,6 +1420,16 @@
 			const grand = itemsTotal + DELIVERY_FEE;
 			itemsTotalEl.textContent = toPeso(itemsTotal);
 			grandTotalEl.textContent = toPeso(grand);
+		}
+
+		function buildAdminOrderSummary(items) {
+			return items
+				.map((item) => {
+					const itemLabel = item.adminDisplayName || item.name;
+					const baseLabel = `${itemLabel} x ${item.qty}`;
+					return item.customizationSummary ? `${baseLabel}\n${item.customizationSummary}` : baseLabel;
+				})
+				.join("\n\n");
 		}
 
 		function showPage(pageId) {
@@ -1609,6 +1621,7 @@
 				paymentMethod,
 				gcashRef: paymentMethod === "GCash" ? refValue : "N/A",
 				items,
+				adminOrderSummary: buildAdminOrderSummary(items),
 				itemsTotal,
 				deliveryFee: DELIVERY_FEE,
 				totalAmount: itemsTotal + DELIVERY_FEE
